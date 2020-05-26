@@ -13,6 +13,7 @@
         "user_phone": "1xxxxxxxxxx"
     }]
 * 先写测试！！！
+* hint: @JsonpProperty的使用
 
 
 <span style="color: red"> 注意：最终需要将改动合并到master分支 </span> 
