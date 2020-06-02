@@ -12,7 +12,7 @@
   其中user需要是已注册用户，否则添加失败返回400
   
 
-* 修改删除用户接口：参照demo，删除用户时，需要同时删除该用户所创建的热搜事件
+* 修改删除用户接口：参照demo，删除用户时，需要同时删除该用户所创建的热搜事件(使用JPA提供的mapping注解@ManyToOne @OneToMany)
 * 添加更新接口
    ```
     request: patch /rs/{rsEventId}
