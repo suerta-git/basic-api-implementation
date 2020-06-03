@@ -28,7 +28,31 @@
           当只传了eventName没传keyword时只更新eventName
           当只传了keyword没传eventName时只更新keyword
           
+* 添加投票接口
+    ```
+    request: post /rs/vote/{rsEventId}
+    request body: {
+                    voteNum: 5,
+                    userId: 1,
+                    voteTime: "current time"
+                  }  
+    接口要求：如果用户剩的票数大于等于voteNum，则能成功给rsEventId对应的热搜事件投票
+            如果用户剩的票数小于voteNum,则投票失败，返回400
+            考虑到以后需要查询投票记录的需求（根据userId查询他投过票的所有热搜事件，票数和投票时间，根据rsEventId查询所有给他投过票的用户，票数和投票时间），
+            创建一个Vote表是一个明智的选择
+            目前不用考虑给热搜事件列表排序的问题
+  
+    ```
 * 修改其余所有接口：所有读取操作都改为从数据库中读取数据（包括重构测试）
+  注意：需要修改热搜事件返回的数据结构，使其返回热搜事件id和获得的票数:
+    ```
+        {
+            eventName: "event name",
+            keyword: "keyword",
+            id: "id",
+            voteNum: 10
+        }
+    ```
 
 * 写测试！！！
 
