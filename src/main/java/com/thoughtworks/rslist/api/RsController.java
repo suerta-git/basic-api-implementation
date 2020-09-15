@@ -9,10 +9,16 @@ import java.util.List;
 
 @RestController
 public class RsController {
-  private final List<RsEvent> rsList = new ArrayList<>(Arrays.asList(
-          new RsEvent("第一条事件", "无标签"),
-          new RsEvent("第二条事件", "无标签"),
-          new RsEvent("第三条事件", "无标签")));
+  private final List<RsEvent> rsList = new ArrayList<>();
+
+  @GetMapping("/init")
+  public void init() {
+    rsList.clear();
+    rsList.addAll(Arrays.asList(
+            new RsEvent("第一条事件", "无标签"),
+            new RsEvent("第二条事件", "无标签"),
+            new RsEvent("第三条事件", "无标签")));
+  }
 
   @GetMapping("/rs/list")
   public List<RsEvent> getRsList(@RequestParam(required = false) Integer start, @RequestParam (required = false) Integer end) {

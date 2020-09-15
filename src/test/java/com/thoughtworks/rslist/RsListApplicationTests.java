@@ -4,6 +4,7 @@ package com.thoughtworks.rslist;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thoughtworks.rslist.domain.RsEvent;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -22,6 +23,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class RsListApplicationTests {
     @Autowired
     MockMvc mockMvc;
+
+    @BeforeEach
+    void setup() throws Exception {
+        mockMvc.perform(get("/init")).andExpect(status().isOk());
+    }
 
     @Test
     void should_get_all_list() throws Exception {
@@ -90,6 +96,34 @@ class RsListApplicationTests {
 
         mockMvc.perform(get("/rs/1"))
                 .andExpect(content().json(json))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void should_update_event_given_one_field() throws Exception {
+        RsEvent firstTestEvent = new RsEvent();
+        firstTestEvent.setKeyWord("只改标签");
+        ObjectMapper objectMapper = new ObjectMapper();
+        String firstJson = objectMapper.writeValueAsString(firstTestEvent);
+
+        mockMvc.perform(patch("/rs/1").content(firstJson).contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(get("/rs/1"))
+                .andExpect(jsonPath("$.eventName", is("第一条事件")))
+                .andExpect(jsonPath("$.keyWord", is("只改标签")))
+                .andExpect(status().isOk());
+
+        RsEvent secondTestEvent = new RsEvent();
+        secondTestEvent.setEventName("第一条事件（新）");
+        String secondJson = objectMapper.writeValueAsString(secondTestEvent);
+
+        mockMvc.perform(patch("/rs/1").content(secondJson).contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(get("/rs/1"))
+                .andExpect(jsonPath("$.eventName", is("第一条事件（新）")))
+                .andExpect(jsonPath("$.keyWord", is("只改标签")))
                 .andExpect(status().isOk());
     }
 
