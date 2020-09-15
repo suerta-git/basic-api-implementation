@@ -47,4 +47,9 @@ public class RsController {
       rsList.get(index - 1).setKeyWord(update.getKeyWord());
     }
   }
+
+  @DeleteMapping("/rs/{index}")
+  public void deleteOneRsEvent(@PathVariable int index) {
+    rsList.remove(index - 1);
+  }
 }
