@@ -1,6 +1,7 @@
 package com.thoughtworks.rslist;
 
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thoughtworks.rslist.domain.RsEvent;
 import org.junit.jupiter.api.Test;
@@ -12,8 +13,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 
@@ -73,6 +73,20 @@ class RsListApplicationTests {
         RsEvent rsEvent = new RsEvent("第一条事件", "无标签");
         ObjectMapper objectMapper = new ObjectMapper();
         String json = objectMapper.writeValueAsString(rsEvent);
+
+        mockMvc.perform(get("/rs/1"))
+                .andExpect(content().json(json))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void should_update_event_given_two_fields() throws Exception {
+        RsEvent rsEvent = new RsEvent("第一条事件（新标签）", "新标签");
+        ObjectMapper objectMapper = new ObjectMapper();
+        String json = objectMapper.writeValueAsString(rsEvent);
+
+        mockMvc.perform(patch("/rs/1").content(json).contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
 
         mockMvc.perform(get("/rs/1"))
                 .andExpect(content().json(json))
