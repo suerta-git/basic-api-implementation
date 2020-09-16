@@ -1,9 +1,8 @@
 package com.thoughtworks.rslist;
 
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.thoughtworks.rslist.api.RsController;
+import com.thoughtworks.rslist.service.RsService;
 import com.thoughtworks.rslist.domain.RsEvent;
 import com.thoughtworks.rslist.domain.User;
 import com.thoughtworks.rslist.service.UserService;
@@ -13,14 +12,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -28,21 +25,36 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 class RsListApplicationTests {
-    @Autowired
-    private MockMvc mockMvc;
+    @Autowired private MockMvc mockMvc;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    @Autowired
-    private UserService userService;
+    @Autowired private UserService userService;
+    @Autowired private RsService rsService;
+
+    private User defaultUser;
+
+    @BeforeEach
+    void setup() {
+        defaultUser = new User("default", 20, "male", "default@test.com", "10987654321");
+        rsService.init(Arrays.asList(
+                new RsEvent("第一条事件", "无标签", defaultUser),
+                new RsEvent("第二条事件", "无标签", defaultUser),
+                new RsEvent("第三条事件", "无标签", defaultUser)));
+        userService.init(Arrays.asList(
+                defaultUser,
+                new User("user1", 20, "male", "user1@test.com", "18888888888"),
+                new User("user2", 20, "female", "user2@test.com", "18888888888"),
+                new User("user3", 20, "female", "user3@test.com", "18888888888")
+        ));
+    }
 
     @Test
     void should_get_all_list() throws Exception {
         List<RsEvent> rsList = new ArrayList<>(Arrays.asList(
-                new RsEvent("第一条事件", "无标签", RsController.DEFAULT_USER),
-                new RsEvent("第二条事件", "无标签", RsController.DEFAULT_USER),
-                new RsEvent("第三条事件", "无标签", RsController.DEFAULT_USER)));
+                new RsEvent("第一条事件", "无标签", defaultUser),
+                new RsEvent("第二条事件", "无标签", defaultUser),
+                new RsEvent("第三条事件", "无标签", defaultUser)));
 
         String jsonString = objectMapper.writeValueAsString(rsList);
 
@@ -54,8 +66,8 @@ class RsListApplicationTests {
     @Test
     void should_get_sublist() throws Exception {
         List<RsEvent> rsList = new ArrayList<>(Arrays.asList(
-                new RsEvent("第一条事件", "无标签", RsController.DEFAULT_USER),
-                new RsEvent("第二条事件", "无标签", RsController.DEFAULT_USER)));
+                new RsEvent("第一条事件", "无标签", defaultUser),
+                new RsEvent("第二条事件", "无标签", defaultUser)));
 
         String jsonString = objectMapper.writeValueAsString(rsList);
 
@@ -73,9 +85,9 @@ class RsListApplicationTests {
                 .andExpect(status().isOk());
 
         List<RsEvent> rsList = new ArrayList<>(Arrays.asList(
-                new RsEvent("第一条事件", "无标签", RsController.DEFAULT_USER),
-                new RsEvent("第二条事件", "无标签", RsController.DEFAULT_USER),
-                new RsEvent("第三条事件", "无标签", RsController.DEFAULT_USER),
+                new RsEvent("第一条事件", "无标签", defaultUser),
+                new RsEvent("第二条事件", "无标签", defaultUser),
+                new RsEvent("第三条事件", "无标签", defaultUser),
                 rsEvent));
 
         String jsonString = objectMapper.writeValueAsString(rsList);
@@ -86,7 +98,7 @@ class RsListApplicationTests {
 
     @Test
     void should_get_one_event() throws Exception {
-        RsEvent rsEvent = new RsEvent("第一条事件", "无标签", RsController.DEFAULT_USER);
+        RsEvent rsEvent = new RsEvent("第一条事件", "无标签", defaultUser);
         String json = objectMapper.writeValueAsString(rsEvent);
 
         mockMvc.perform(get("/rs/1"))
@@ -96,7 +108,7 @@ class RsListApplicationTests {
 
     @Test
     void should_update_event_given_two_fields() throws Exception {
-        RsEvent rsEvent = new RsEvent("第一条事件（新标签）", "新标签", RsController.DEFAULT_USER);
+        RsEvent rsEvent = new RsEvent("第一条事件（新标签）", "新标签", defaultUser);
         String json = objectMapper.writeValueAsString(rsEvent);
 
         mockMvc.perform(patch("/rs/1").content(json).contentType(MediaType.APPLICATION_JSON))
@@ -114,7 +126,7 @@ class RsListApplicationTests {
 
         String firstJson = objectMapper.writeValueAsString(firstTestEvent);
 
-        RsEvent firstExpectRsEvent = new RsEvent("第一条事件", "只改标签", RsController.DEFAULT_USER);
+        RsEvent firstExpectRsEvent = new RsEvent("第一条事件", "只改标签", defaultUser);
         String firstExpectJson = objectMapper.writeValueAsString(firstExpectRsEvent);
 
         mockMvc.perform(patch("/rs/1").content(firstJson).contentType(MediaType.APPLICATION_JSON))
@@ -127,7 +139,7 @@ class RsListApplicationTests {
         secondTestEvent.setEventName("第一条事件（新）");
         String secondJson = objectMapper.writeValueAsString(secondTestEvent);
 
-        RsEvent secondExpectRsEvent = new RsEvent("第一条事件（新）", "只改标签", RsController.DEFAULT_USER);
+        RsEvent secondExpectRsEvent = new RsEvent("第一条事件（新）", "只改标签", defaultUser);
         String secondExpectJson = objectMapper.writeValueAsString(secondExpectRsEvent);
 
         mockMvc.perform(patch("/rs/1").content(secondJson).contentType(MediaType.APPLICATION_JSON))
@@ -154,8 +166,8 @@ class RsListApplicationTests {
     @Test
     void should_delete_event_given_index() throws Exception {
         List<RsEvent> rsList = new ArrayList<>(Arrays.asList(
-                new RsEvent("第二条事件", "无标签", RsController.DEFAULT_USER),
-                new RsEvent("第三条事件", "无标签", RsController.DEFAULT_USER)));
+                new RsEvent("第二条事件", "无标签", defaultUser),
+                new RsEvent("第三条事件", "无标签", defaultUser)));
 
         String jsonString = objectMapper.writeValueAsString(rsList);
 

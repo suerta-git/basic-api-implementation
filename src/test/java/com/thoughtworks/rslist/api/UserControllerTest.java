@@ -2,10 +2,8 @@ package com.thoughtworks.rslist.api;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thoughtworks.rslist.domain.User;
-import org.junit.jupiter.api.MethodOrderer;
-import org.junit.jupiter.api.Order;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestMethodOrder;
+import com.thoughtworks.rslist.service.UserService;
+import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -24,12 +22,21 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class UserControllerTest {
 
-    @Autowired
-    MockMvc mockMvc;
+    @Autowired private MockMvc mockMvc;
+
+    @Autowired private UserService userService;
+
+    @BeforeEach
+    void setup() {
+        userService.init(Arrays.asList(
+                new User("user1", 20, "male", "user1@test.com", "18888888888"),
+                new User("user2", 20, "female", "user2@test.com", "18888888888"),
+                new User("user3", 20, "female", "user3@test.com", "18888888888")
+        ));
+    }
 
     @Test
     @Order(2)

@@ -9,12 +9,9 @@ import java.util.List;
 
 @Service
 public class UserService {
-    private final List<User> userList = new ArrayList<>(Arrays.asList(
-            new User("user1", 20, "male", "user1@test.com", "18888888888"),
-            new User("user2", 20, "female", "user2@test.com", "18888888888"),
-            new User("user3", 20, "female", "user3@test.com", "18888888888")
-    ));
+    private final List<User> userList = new ArrayList<>();
 
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public boolean isExistByName(String userName) {
         return userList.stream().anyMatch((user -> user.getUserName().equals(userName)));
     }
@@ -38,5 +35,10 @@ public class UserService {
 
     public boolean contains(User user) {
         return userList.contains(user);
+    }
+
+    public void init(List<User> users) {
+        userList.clear();
+        userList.addAll(users);
     }
 }

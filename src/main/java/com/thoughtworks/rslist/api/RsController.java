@@ -2,6 +2,7 @@ package com.thoughtworks.rslist.api;
 
 import com.thoughtworks.rslist.domain.RsEvent;
 import com.thoughtworks.rslist.domain.User;
+import com.thoughtworks.rslist.service.RsService;
 import com.thoughtworks.rslist.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -13,62 +14,34 @@ import java.util.List;
 
 @RestController
 public class RsController {
-  public static final User DEFAULT_USER = new User("test", 20, "male", "test@test.com", "10987654321");
-  private final List<RsEvent> rsList = new ArrayList<>(Arrays.asList(
-          new RsEvent("第一条事件", "无标签", DEFAULT_USER),
-          new RsEvent("第二条事件", "无标签", DEFAULT_USER),
-          new RsEvent("第三条事件", "无标签", DEFAULT_USER)));
-
-  @Autowired
-  private UserService userService;
+  @Autowired private UserService userService;
+  @Autowired private RsService rsService;
 
   @GetMapping("/rs/list")
   public List<RsEvent> getRsList(@RequestParam(required = false) Integer start, @RequestParam (required = false) Integer end) {
     if (start == null || end == null) {
-      return rsList;
+      return rsService.getList();
     }
-    return rsList.subList(start - 1, end);
+    return rsService.getSubList(start - 1, end);
   }
 
   @PostMapping("/rs/event")
   public void addRsEvent(@RequestBody @Valid RsEvent rsEvent){
-    final String userName = rsEvent.getUser().getUserName();
-    if (!userService.isExistByName(userName)) {
-      userService.addUser(rsEvent.getUser());
-    } else {
-      rsEvent.setUser(userService.getUser(userName));
-    }
-    rsList.add(rsEvent);
+    rsService.addRsEvent(rsEvent);
   }
 
   @GetMapping("/rs/{index}")
   public RsEvent getOneRsEvent(@PathVariable int index) {
-    return rsList.get(index - 1);
+    return rsService.get(index - 1);
   }
 
   @PatchMapping("/rs/{index}")
-  public void updateOneRsEvent(@PathVariable int index, @RequestBody RsEvent update) {
-    if (update.getEventName() != null) {
-      rsList.get(index - 1).setEventName(update.getEventName());
-    }
-    if (update.getKeyWord() != null) {
-      rsList.get(index - 1).setKeyWord(update.getKeyWord());
-    }
-    if (update.getUser() != null) {
-      final String userName = update.getUser().getUserName();
-      User correctUser = update.getUser();
-
-      if (!userService.isExistByName(userName)) {
-        userService.addUser(correctUser);
-      } else {
-        correctUser = userService.getUser(userName);
-      }
-      rsList.get(index - 1).setUser(correctUser);
-    }
+  public void updateRsEventOn(@RequestBody RsEvent update, @PathVariable int index) {
+    rsService.updateRsEventOn(update, index - 1);
   }
 
   @DeleteMapping("/rs/{index}")
-  public void deleteOneRsEvent(@PathVariable int index) {
-    rsList.remove(index - 1);
+  public void deleteRsEventOn(@PathVariable int index) {
+    rsService.deleteRsEventOn(index - 1);
   }
 }
