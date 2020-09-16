@@ -27,10 +27,12 @@ public class UserService {
                 .orElse(null);
     }
 
-    public void addUser(User user) {
+    public int addUser(User user) {
         if (!isExistByName(user.getUserName())) {
             userList.add(user);
+            return userList.size() - 1;
         }
+        return -1;
     }
 
     public boolean contains(User user) {

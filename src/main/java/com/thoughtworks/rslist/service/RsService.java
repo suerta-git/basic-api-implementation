@@ -28,7 +28,7 @@ public class RsService {
         return rsList.subList(start, end);
     }
 
-    public void addRsEvent(RsEvent rsEvent) {
+    public int addRsEvent(RsEvent rsEvent) {
         final String userName = rsEvent.getUser().getUserName();
         if (!userService.isExistByName(userName)) {
             userService.addUser(rsEvent.getUser());
@@ -36,6 +36,7 @@ public class RsService {
             rsEvent.setUser(userService.getUser(userName));
         }
         rsList.add(rsEvent);
+        return rsList.size() - 1;
     }
 
     public RsEvent get(int index) {

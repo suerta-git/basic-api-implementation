@@ -27,8 +27,8 @@ public class UserController {
 
     @PostMapping("/user")
     public ResponseEntity addUser(@RequestBody @Valid User user){
-        userService.addUser(user);
-        return ResponseEntity.ok().build();
+        int index = userService.addUser(user);
+        return ResponseEntity.created(null).header("index", String.valueOf(index + 1)).build();
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

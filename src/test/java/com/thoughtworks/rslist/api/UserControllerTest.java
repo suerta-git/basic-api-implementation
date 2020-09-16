@@ -61,7 +61,8 @@ class UserControllerTest {
         String jsonString = objectMapper.writeValueAsString(newUser);
 
         mockMvc.perform(post("/user").content(jsonString).contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
+                .andExpect(status().isCreated())
+                .andExpect(header().longValue("index", 4));;
 
         List<User> userList = new ArrayList<>(Arrays.asList(
                 new User("user1", 20, "male", "user1@test.com", "18888888888"),

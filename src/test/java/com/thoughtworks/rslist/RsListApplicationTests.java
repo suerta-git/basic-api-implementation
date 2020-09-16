@@ -82,7 +82,8 @@ class RsListApplicationTests {
         RsEvent rsEvent = new RsEvent("猪肉涨价了", "经济", newUser);
         String json = objectMapper.writeValueAsString(rsEvent);
         mockMvc.perform(post("/rs/event").content(json).contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
+                .andExpect(status().isCreated())
+                .andExpect(header().longValue("index", 4));
 
         List<RsEvent> rsList = new ArrayList<>(Arrays.asList(
                 new RsEvent("第一条事件", "无标签", defaultUser),
@@ -196,7 +197,8 @@ class RsListApplicationTests {
         String json = objectMapper.writeValueAsString(rsEvent);
 
         mockMvc.perform(post("/rs/event").content(json).contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
+                .andExpect(status().isCreated())
+                .andExpect(header().longValue("index", 4));
 
         assertTrue(userService.contains(newUser));
     }
@@ -208,7 +210,8 @@ class RsListApplicationTests {
         String json = objectMapper.writeValueAsString(rsEvent);
 
         mockMvc.perform(post("/rs/event").content(json).contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
+                .andExpect(status().isCreated())
+                .andExpect(header().longValue("index", 4));;
 
         assertFalse(userService.contains(existingUser));
 
