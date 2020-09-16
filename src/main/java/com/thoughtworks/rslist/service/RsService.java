@@ -15,6 +15,10 @@ public class RsService {
 
     @Autowired private UserService userService;
 
+    public int size() {
+        return rsList.size();
+    }
+
     public List<RsEvent> getList() {
         return rsList;
     }
