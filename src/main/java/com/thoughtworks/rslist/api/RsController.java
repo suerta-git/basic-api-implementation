@@ -11,16 +11,10 @@ import java.util.List;
 @RestController
 public class RsController {
   public static final User DEFAULT_USER = new User("test", 20, "male", "test@test.com", "10987654321");
-  private final List<RsEvent> rsList = new ArrayList<>();
-
-  @GetMapping("/init")
-  public void init() {
-    rsList.clear();
-    rsList.addAll(Arrays.asList(
-            new RsEvent("第一条事件", "无标签", DEFAULT_USER),
-            new RsEvent("第二条事件", "无标签", DEFAULT_USER),
-            new RsEvent("第三条事件", "无标签", DEFAULT_USER)));
-  }
+  private final List<RsEvent> rsList = new ArrayList<>(Arrays.asList(
+          new RsEvent("第一条事件", "无标签", DEFAULT_USER),
+          new RsEvent("第二条事件", "无标签", DEFAULT_USER),
+          new RsEvent("第三条事件", "无标签", DEFAULT_USER)));
 
   @GetMapping("/rs/list")
   public List<RsEvent> getRsList(@RequestParam(required = false) Integer start, @RequestParam (required = false) Integer end) {
