@@ -49,7 +49,7 @@ class UserControllerTest {
 
     @Test
     @Order(1)
-    void should_add_user_without_validation() throws Exception {
+    void should_add_user_with_correct_format() throws Exception {
         User newUser = new User("newUser", 20, "male", "new@test.com", "18888888888");
         ObjectMapper objectMapper = new ObjectMapper();
         String jsonString = objectMapper.writeValueAsString(newUser);
@@ -69,4 +69,29 @@ class UserControllerTest {
                 .andExpect(content().json(jsonString))
                 .andExpect(status().isOk());
     }
+
+    @Test
+    void should_refuse_add_user_given_wrong_format_user() throws Exception {
+        User tooLangNameUser = new User("name_too_lang", 20, "male", "new@test.com", "18888888888");
+        User tooYoungUser = new User("newUser", 15, "male", "new@test.com", "18888888888");
+        User wrongEmailUser = new User("newUser", 20, "male", "wrongEmail.com", "18888888888");
+        User wrongPhoneUser = new User("newUser", 20, "male", "new@test.com", "110");
+
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        String jsonString = objectMapper.writeValueAsString(tooLangNameUser);
+        mockMvc.perform(post("/user").content(jsonString).contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+        jsonString = objectMapper.writeValueAsString(tooYoungUser);
+        mockMvc.perform(post("/user").content(jsonString).contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+        jsonString = objectMapper.writeValueAsString(wrongEmailUser);
+        mockMvc.perform(post("/user").content(jsonString).contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+        jsonString = objectMapper.writeValueAsString(wrongPhoneUser);
+        mockMvc.perform(post("/user").content(jsonString).contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+    }
+
+
 }
