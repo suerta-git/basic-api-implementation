@@ -1,6 +1,7 @@
 package com.thoughtworks.rslist.api;
 
 import com.thoughtworks.rslist.domain.RsEvent;
+import com.thoughtworks.rslist.domain.User;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -9,15 +10,16 @@ import java.util.List;
 
 @RestController
 public class RsController {
+  public static final User DEFAULT_USER = new User("test", 20, "male", "test@test.com", "10987654321");
   private final List<RsEvent> rsList = new ArrayList<>();
 
   @GetMapping("/init")
   public void init() {
     rsList.clear();
     rsList.addAll(Arrays.asList(
-            new RsEvent("第一条事件", "无标签"),
-            new RsEvent("第二条事件", "无标签"),
-            new RsEvent("第三条事件", "无标签")));
+            new RsEvent("第一条事件", "无标签", DEFAULT_USER),
+            new RsEvent("第二条事件", "无标签", DEFAULT_USER),
+            new RsEvent("第三条事件", "无标签", DEFAULT_USER)));
   }
 
   @GetMapping("/rs/list")
@@ -45,6 +47,9 @@ public class RsController {
     }
     if (update.getKeyWord() != null) {
       rsList.get(index - 1).setKeyWord(update.getKeyWord());
+    }
+    if (update.getUser() != null) {
+      rsList.get(index - 1).setUser(update.getUser());
     }
   }
 
