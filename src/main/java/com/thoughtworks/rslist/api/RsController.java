@@ -50,9 +50,4 @@ public class RsController {
   public void deleteRsEventOn(@PathVariable int index) {
     rsService.deleteRsEventOn(index - 1);
   }
-
-  @ExceptionHandler(RsEventNotValidException.class)
-  public ResponseEntity<Error> exceptionHandler(RsEventNotValidException e) {
-    return ResponseEntity.badRequest().body(new Error(e.getMessage()));
-  }
 }

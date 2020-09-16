@@ -185,7 +185,8 @@ class RsListApplicationTests {
         String json = objectMapper.writeValueAsString(rsEvent);
 
         mockMvc.perform(post("/rs/event").content(json).contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error", is("invalid param")));
     }
 
     @Test
@@ -230,9 +231,11 @@ class RsListApplicationTests {
         String nullKeyWordJson = objectMapper.writeValueAsString(nullKeyWordEvent);
 
         mockMvc.perform(post("/rs/event").content(nullEventNameJson).contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error", is("invalid param")));
         mockMvc.perform(post("/rs/event").content(nullKeyWordJson).contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error", is("invalid param")));
     }
 
     @Test
