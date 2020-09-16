@@ -66,8 +66,8 @@ class RsListApplicationTests {
 
     @Test
     void should_can_post_new_event() throws Exception {
-        User user1 = new User("user1", 20, "male", "default@test.com", "10987654321");
-        RsEvent rsEvent = new RsEvent("猪肉涨价了", "经济", user1);
+        User newUser = new User("other", 20, "male", "default@test.com", "10987654321");
+        RsEvent rsEvent = new RsEvent("猪肉涨价了", "经济", newUser);
         String json = objectMapper.writeValueAsString(rsEvent);
         mockMvc.perform(post("/rs/event").content(json).contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
