@@ -208,4 +208,19 @@ class RsListApplicationTests {
                 .andExpect(status().isOk());
     }
 
+    @Test
+    void should_refuse_when_add_event_given_null_fields() throws Exception {
+        User newUser = new User("newUser", 80, "female", "someone@test.com", "11234567890");
+        RsEvent nullEventNameEvent = new RsEvent(null, "whatever", newUser);
+        RsEvent nullKeyWordEvent = new RsEvent("whatever", null, newUser);
+
+        String nullEventNameJson = objectMapper.writeValueAsString(nullEventNameEvent);
+        String nullKeyWordJson = objectMapper.writeValueAsString(nullKeyWordEvent);
+
+        mockMvc.perform(post("/rs/event").content(nullEventNameJson).contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+        mockMvc.perform(post("/rs/event").content(nullKeyWordJson).contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+    }
+
 }
