@@ -55,7 +55,15 @@ public class RsController {
       rsList.get(index - 1).setKeyWord(update.getKeyWord());
     }
     if (update.getUser() != null) {
-      rsList.get(index - 1).setUser(update.getUser());
+      final String userName = update.getUser().getUserName();
+      User correctUser = update.getUser();
+
+      if (!userService.isExistByName(userName)) {
+        userService.addUser(correctUser);
+      } else {
+        correctUser = userService.getUser(userName);
+      }
+      rsList.get(index - 1).setUser(correctUser);
     }
   }
 

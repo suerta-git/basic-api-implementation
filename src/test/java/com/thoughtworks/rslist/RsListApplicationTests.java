@@ -223,4 +223,22 @@ class RsListApplicationTests {
                 .andExpect(status().isBadRequest());
     }
 
+    @Test
+    void should_use_correct_user_when_update_event_given_existing_user() throws Exception {
+        User existingUser = new User("user1", 80, "female", "someone@test.com", "11234567890");
+        RsEvent rsEvent = new RsEvent(null, null, existingUser);
+        String json = objectMapper.writeValueAsString(rsEvent);
+
+        mockMvc.perform(patch("/rs/1").content(json).contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+
+        RsEvent expectRsEvent = new RsEvent(
+                "第一条事件",
+                "无标签",
+                new User("user1", 20, "male", "user1@test.com", "18888888888"));
+        String expectJson = objectMapper.writeValueAsString(expectRsEvent);
+        mockMvc.perform(get("/rs/1")).andExpect(content().json(expectJson))
+                .andExpect(status().isOk());
+    }
+
 }
