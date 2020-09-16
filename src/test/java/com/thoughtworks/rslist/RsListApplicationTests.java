@@ -216,11 +216,11 @@ class RsListApplicationTests {
         assertFalse(userService.contains(existingUser));
 
         mockMvc.perform(get("/rs/4"))
-                .andExpect(jsonPath("$.user.userName", is("user1")))
-                .andExpect(jsonPath("$.user.age", is(20)))
-                .andExpect(jsonPath("$.user.gender", is("male")))
-                .andExpect(jsonPath("$.user.email", is("user1@test.com")))
-                .andExpect(jsonPath("$.user.phone", is("18888888888")))
+                .andExpect(jsonPath("$.user.user_name", is("user1")))
+                .andExpect(jsonPath("$.user.user_age", is(20)))
+                .andExpect(jsonPath("$.user.user_gender", is("male")))
+                .andExpect(jsonPath("$.user.user_email", is("user1@test.com")))
+                .andExpect(jsonPath("$.user.user_phone", is("18888888888")))
                 .andExpect(status().isOk());
     }
 
