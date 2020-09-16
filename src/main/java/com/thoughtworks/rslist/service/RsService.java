@@ -2,6 +2,7 @@ package com.thoughtworks.rslist.service;
 
 import com.thoughtworks.rslist.domain.RsEvent;
 import com.thoughtworks.rslist.domain.User;
+import com.thoughtworks.rslist.exception.RsEventNotValidException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -14,6 +15,10 @@ public class RsService {
     private final List<RsEvent> rsList = new ArrayList<>();
 
     @Autowired private UserService userService;
+
+    public int size() {
+        return rsList.size();
+    }
 
     public List<RsEvent> getList() {
         return rsList;
@@ -34,6 +39,9 @@ public class RsService {
     }
 
     public RsEvent get(int index) {
+        if (index < 0 || index >= size()) {
+            throw new RsEventNotValidException("invalid index");
+        }
         return rsList.get(index);
     }
 

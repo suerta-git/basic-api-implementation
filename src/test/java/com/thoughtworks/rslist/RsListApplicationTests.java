@@ -185,7 +185,8 @@ class RsListApplicationTests {
         String json = objectMapper.writeValueAsString(rsEvent);
 
         mockMvc.perform(post("/rs/event").content(json).contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error", is("invalid param")));
     }
 
     @Test
@@ -230,9 +231,11 @@ class RsListApplicationTests {
         String nullKeyWordJson = objectMapper.writeValueAsString(nullKeyWordEvent);
 
         mockMvc.perform(post("/rs/event").content(nullEventNameJson).contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error", is("invalid param")));
         mockMvc.perform(post("/rs/event").content(nullKeyWordJson).contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error", is("invalid param")));
     }
 
     @Test
@@ -251,6 +254,20 @@ class RsListApplicationTests {
         String expectJson = objectMapper.writeValueAsString(expectRsEvent);
         mockMvc.perform(get("/rs/1")).andExpect(content().json(expectJson))
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    void should_throw_given_out_range_index() throws Exception {
+        mockMvc.perform(get("/rs/list?start=0&end=4"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error", is("invalid request param")));
+    }
+
+    @Test
+    void should_throw_given_out_range_index2() throws Exception {
+        mockMvc.perform(get("/rs/4"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error", is("invalid index")));
     }
 
 }

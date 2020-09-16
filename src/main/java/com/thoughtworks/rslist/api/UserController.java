@@ -1,12 +1,14 @@
 package com.thoughtworks.rslist.api;
 
 import com.thoughtworks.rslist.domain.User;
+import com.thoughtworks.rslist.exception.Error;
 import com.thoughtworks.rslist.service.UserService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.List;
@@ -16,12 +18,7 @@ public class UserController {
     @Autowired
     private UserService userService;
 
-    public UserController(UserService userService) {
-        this.userService = userService;
-    }
-
-    public UserController() {
-    }
+    private final Logger logger = LoggerFactory.getLogger(UserController.class);
 
     @GetMapping("/user")
     public List<User> getUserList() {
@@ -31,5 +28,11 @@ public class UserController {
     @PostMapping("/user")
     public void addUser(@RequestBody @Valid User user){
         userService.addUser(user);
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    private ResponseEntity<Error> exceptionHandler(MethodArgumentNotValidException e) {
+        logger.error("Here is a invalid user");
+        return ResponseEntity.badRequest().body(new Error("invalid user"));
     }
 }
