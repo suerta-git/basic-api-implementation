@@ -188,4 +188,16 @@ class RsListApplicationTests {
         assertTrue(userService.contains(newUser));
     }
 
+    @Test
+    void should_not_add_user_when_add_event_given_existing_user() throws Exception {
+        User existingUser = new User("user1", 80, "female", "someone@test.com", "11234567890");
+        RsEvent rsEvent = new RsEvent("whatever", "whatever", existingUser);
+        String json = objectMapper.writeValueAsString(rsEvent);
+
+        mockMvc.perform(post("/rs/event").content(json).contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+
+        assertFalse(userService.contains(existingUser));
+    }
+
 }

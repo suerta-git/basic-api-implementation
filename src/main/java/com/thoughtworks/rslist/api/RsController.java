@@ -32,8 +32,13 @@ public class RsController {
 
   @PostMapping("/rs/event")
   public void addRsEvent(@RequestBody @Valid RsEvent rsEvent){
+    final String userName = rsEvent.getUser().getUserName();
+    if (!userService.isExistByName(userName)) {
+      userService.addUser(rsEvent.getUser());
+    } else {
+      rsEvent.setUser(userService.getUser(userName));
+    }
     rsList.add(rsEvent);
-    userService.addUser(rsEvent.getUser());
   }
 
   @GetMapping("/rs/{index}")
