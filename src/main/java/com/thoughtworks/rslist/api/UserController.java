@@ -1,31 +1,35 @@
 package com.thoughtworks.rslist.api;
 
 import com.thoughtworks.rslist.domain.User;
+import com.thoughtworks.rslist.service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 @RestController
 public class UserController {
-    private final List<User> userList = new ArrayList<>(Arrays.asList(
-            new User("user1", 20, "male", "user1@test.com", "18888888888"),
-            new User("user2", 20, "female", "user2@test.com", "18888888888"),
-            new User("user3", 20, "female", "user3@test.com", "18888888888")
-    ));
+    @Autowired
+    private UserService userService;
+
+    public UserController(UserService userService) {
+        this.userService = userService;
+    }
+
+    public UserController() {
+    }
 
     @GetMapping("/user")
     public List<User> getUserList() {
-        return userList;
+        return userService.getUserList();
     }
 
     @PostMapping("/user")
     public void addUser(@RequestBody @Valid User user){
-        userList.add(user);
+        userService.addUser(user);
     }
 }

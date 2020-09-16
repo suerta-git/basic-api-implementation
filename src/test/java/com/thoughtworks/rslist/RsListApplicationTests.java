@@ -1,6 +1,7 @@
 package com.thoughtworks.rslist;
 
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thoughtworks.rslist.api.RsController;
 import com.thoughtworks.rslist.domain.RsEvent;
@@ -169,6 +170,16 @@ class RsListApplicationTests {
 
         mockMvc.perform(post("/rs/event").content(json).contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void should_not_add_new_user_when_add_event_given_user_with_existing_name() throws Exception {
+        User existingUser = new User("user1", 80, "female", "someone@test.com", "11234567890");
+        RsEvent rsEvent = new RsEvent("whatever", "whatever", existingUser);
+        String json = objectMapper.writeValueAsString(rsEvent);
+
+        mockMvc.perform(post("/rs/event").content(json).contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
     }
 
 }
