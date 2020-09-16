@@ -27,6 +27,10 @@ public class UserService {
                 .orElse(null);
     }
 
+    public User getUser(int index) {
+        return userList.get(index);
+    }
+
     public int addUser(User user) {
         if (!isExistByName(user.getUserName())) {
             userList.add(user);

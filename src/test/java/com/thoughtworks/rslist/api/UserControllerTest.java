@@ -48,7 +48,7 @@ class UserControllerTest {
         ObjectMapper objectMapper = new ObjectMapper();
         String jsonString = objectMapper.writeValueAsString(userList);
 
-        mockMvc.perform(get("/user"))
+        mockMvc.perform(get("/users"))
                 .andExpect(content().json(jsonString))
                 .andExpect(status().isOk());
     }
@@ -72,7 +72,7 @@ class UserControllerTest {
         ));
         jsonString = objectMapper.writeValueAsString(userList);
 
-        mockMvc.perform(get("/user"))
+        mockMvc.perform(get("/users"))
                 .andExpect(content().json(jsonString))
                 .andExpect(status().isOk());
     }
@@ -104,5 +104,32 @@ class UserControllerTest {
                 .andExpect(jsonPath("$.error", is("invalid user")));
     }
 
+    @Test
+    void should_return_all_users_and_rename_fields() throws Exception {
+        ObjectMapper objectMapper = new ObjectMapper();
+        String expectJson = objectMapper.writeValueAsString(Arrays.asList(
+                new User("user1", 20, "male", "user1@test.com", "18888888888"),
+                new User("user2", 20, "female", "user2@test.com", "18888888888"),
+                new User("user3", 20, "female", "user3@test.com", "18888888888")
+        ));
 
+        mockMvc.perform(get("/users"))
+                .andExpect(content().json(expectJson))
+                .andExpect(jsonPath("$[0].user_name", is("user1")))
+                .andExpect(jsonPath("$[0].user_age", is(20)))
+                .andExpect(jsonPath("$[0].user_gender", is("male")))
+                .andExpect(jsonPath("$[0].user_email", is("user1@test.com")))
+                .andExpect(jsonPath("$[0].user_phone", is("18888888888")))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void should_get_user_given_index() throws Exception {
+        ObjectMapper objectMapper = new ObjectMapper();
+        String expect = objectMapper.writeValueAsString(new User("user1", 20, "male", "user1@test.com", "18888888888"));
+
+        mockMvc.perform(get("/user/1"))
+                .andExpect(content().json(expect))
+                .andExpect(status().isOk());
+    }
 }

@@ -1,5 +1,7 @@
 package com.thoughtworks.rslist.domain;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import javax.validation.constraints.*;
 import java.util.Objects;
 
@@ -27,7 +29,7 @@ public class User {
         this.phone = phone;
     }
 
-    public String getUserName() {
+    @JsonProperty("user_name") public String getUserName() {
         return userName;
     }
 
@@ -35,7 +37,7 @@ public class User {
         this.userName = userName;
     }
 
-    public int getAge() {
+    @JsonProperty("user_age") public int getAge() {
         return age;
     }
 
@@ -43,7 +45,7 @@ public class User {
         this.age = age;
     }
 
-    public String getGender() {
+    @JsonProperty("user_gender") public String getGender() {
         return gender;
     }
 
@@ -51,7 +53,7 @@ public class User {
         this.gender = gender;
     }
 
-    public String getEmail() {
+    @JsonProperty("user_email") public String getEmail() {
         return email;
     }
 
@@ -59,7 +61,7 @@ public class User {
         this.email = email;
     }
 
-    public String getPhone() {
+    @JsonProperty("user_phone") public String getPhone() {
         return phone;
     }
 

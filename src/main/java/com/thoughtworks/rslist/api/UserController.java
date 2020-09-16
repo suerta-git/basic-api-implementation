@@ -7,8 +7,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 
 import javax.validation.Valid;
 import java.util.List;
@@ -20,7 +20,7 @@ public class UserController {
 
     private final Logger logger = LoggerFactory.getLogger(UserController.class);
 
-    @GetMapping("/user")
+    @GetMapping("/users")
     public ResponseEntity<List<User>> getUserList() {
         return ResponseEntity.ok(userService.getUserList());
     }
@@ -29,6 +29,11 @@ public class UserController {
     public ResponseEntity addUser(@RequestBody @Valid User user){
         int index = userService.addUser(user);
         return ResponseEntity.created(null).header("index", String.valueOf(index + 1)).build();
+    }
+
+    @GetMapping("/user/{index}")
+    public ResponseEntity<User> getUser(@PathVariable int index){
+        return ResponseEntity.ok(userService.getUser(index - 1));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
