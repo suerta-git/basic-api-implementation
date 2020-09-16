@@ -161,4 +161,14 @@ class RsListApplicationTests {
                 .andExpect(status().isOk());
     }
 
+    @Test
+    void should_refuse_when_add_event_given_user_with_wrong_format() throws Exception {
+        User tooLangNameUser = new User("too_lang_name", 20, "male", "test@test.com", "10987654321");
+        RsEvent rsEvent = new RsEvent("whatever", "whatever", tooLangNameUser);
+        String json = objectMapper.writeValueAsString(rsEvent);
+
+        mockMvc.perform(post("/rs/event").content(json).contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+    }
+
 }
