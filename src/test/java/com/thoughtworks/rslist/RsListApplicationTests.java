@@ -260,4 +260,11 @@ class RsListApplicationTests {
                 .andExpect(jsonPath("$.error", is("invalid request param")));
     }
 
+    @Test
+    void should_throw_given_out_range_index2() throws Exception {
+        mockMvc.perform(get("/rs/4"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error", is("invalid index")));
+    }
+
 }
