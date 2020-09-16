@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thoughtworks.rslist.api.RsController;
 import com.thoughtworks.rslist.domain.RsEvent;
 import com.thoughtworks.rslist.domain.User;
+import com.thoughtworks.rslist.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,15 +24,18 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
+import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 class RsListApplicationTests {
     @Autowired
-    MockMvc mockMvc;
-    private final ObjectMapper objectMapper = new ObjectMapper();;
+    private MockMvc mockMvc;
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
+    @Autowired
+    private UserService userService;
 
     @Test
     void should_get_all_list() throws Exception {
@@ -173,13 +177,15 @@ class RsListApplicationTests {
     }
 
     @Test
-    void should_not_add_new_user_when_add_event_given_user_with_existing_name() throws Exception {
-        User existingUser = new User("user1", 80, "female", "someone@test.com", "11234567890");
-        RsEvent rsEvent = new RsEvent("whatever", "whatever", existingUser);
+    void should_add_new_user_when_add_event_given_new_user() throws Exception {
+        User newUser = new User("newUser", 80, "female", "someone@test.com", "11234567890");
+        RsEvent rsEvent = new RsEvent("whatever", "whatever", newUser);
         String json = objectMapper.writeValueAsString(rsEvent);
 
         mockMvc.perform(post("/rs/event").content(json).contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
+
+        assertTrue(userService.contains(newUser));
     }
 
 }

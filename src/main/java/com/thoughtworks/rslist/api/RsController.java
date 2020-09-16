@@ -2,6 +2,8 @@ package com.thoughtworks.rslist.api;
 
 import com.thoughtworks.rslist.domain.RsEvent;
 import com.thoughtworks.rslist.domain.User;
+import com.thoughtworks.rslist.service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -17,6 +19,9 @@ public class RsController {
           new RsEvent("第二条事件", "无标签", DEFAULT_USER),
           new RsEvent("第三条事件", "无标签", DEFAULT_USER)));
 
+  @Autowired
+  private UserService userService;
+
   @GetMapping("/rs/list")
   public List<RsEvent> getRsList(@RequestParam(required = false) Integer start, @RequestParam (required = false) Integer end) {
     if (start == null || end == null) {
@@ -28,6 +33,7 @@ public class RsController {
   @PostMapping("/rs/event")
   public void addRsEvent(@RequestBody @Valid RsEvent rsEvent){
     rsList.add(rsEvent);
+    userService.addUser(rsEvent.getUser());
   }
 
   @GetMapping("/rs/{index}")
