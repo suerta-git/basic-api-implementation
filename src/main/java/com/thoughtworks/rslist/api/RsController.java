@@ -5,6 +5,7 @@ import com.thoughtworks.rslist.exception.RsEventNotValidException;
 import com.thoughtworks.rslist.service.RsService;
 import com.thoughtworks.rslist.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -31,9 +32,9 @@ public class RsController {
   }
 
   @PostMapping("/rs/event")
-  public ResponseEntity addRsEvent(@RequestBody @Valid RsEvent rsEvent){
+  public ResponseEntity<Void> addRsEvent(@RequestBody @Valid RsEvent rsEvent){
     int index = rsService.addRsEvent(rsEvent);
-    return ResponseEntity.created(null).header("index", String.valueOf(index + 1)).build();
+    return ResponseEntity.status(HttpStatus.CREATED).header("index", String.valueOf(index + 1)).build();
   }
 
   @GetMapping("/rs/{index}")
@@ -42,13 +43,13 @@ public class RsController {
   }
 
   @PatchMapping("/rs/{index}")
-  public ResponseEntity updateRsEventOn(@RequestBody RsEvent update, @PathVariable int index) {
+  public ResponseEntity<Void> updateRsEventOn(@RequestBody RsEvent update, @PathVariable int index) {
     rsService.updateRsEventOn(update, index - 1);
     return ResponseEntity.ok().build();
   }
 
   @DeleteMapping("/rs/{index}")
-  public ResponseEntity deleteRsEventOn(@PathVariable int index) {
+  public ResponseEntity<Void> deleteRsEventOn(@PathVariable int index) {
     rsService.deleteRsEventOn(index - 1);
     return ResponseEntity.ok().build();
   }

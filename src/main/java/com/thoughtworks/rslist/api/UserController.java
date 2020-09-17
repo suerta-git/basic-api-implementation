@@ -6,6 +6,7 @@ import com.thoughtworks.rslist.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -26,9 +27,9 @@ public class UserController {
     }
 
     @PostMapping("/user")
-    public ResponseEntity addUser(@RequestBody @Valid User user){
+    public ResponseEntity<Void> addUser(@RequestBody @Valid User user){
         int index = userService.addUser(user);
-        return ResponseEntity.created(null).header("index", String.valueOf(index + 1)).build();
+        return ResponseEntity.status(HttpStatus.CREATED).header("index", String.valueOf(index + 1)).build();
     }
 
     @GetMapping("/user/{index}")
