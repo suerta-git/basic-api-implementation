@@ -138,6 +138,15 @@ class UserControllerTest {
     }
 
     @Test
+    void should_throw_when_get_user_given_wrong_user_id() throws Exception {
+        int wrongId = 99999;
+
+        mockMvc.perform(get("/user/{userId}", wrongId))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error", is("invalid user id")));
+    }
+
+    @Test
     void should_remove_user_given_user_id() throws Exception {
         int userId = userRepository.findIdByUserName("user1");
 

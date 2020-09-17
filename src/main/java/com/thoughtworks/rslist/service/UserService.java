@@ -37,7 +37,9 @@ public class UserService {
     }
 
     public User getUser(int userId) {
-        return toUser(userRepository.findById(userId).orElse(new UserPO()));
+        return toUser(userRepository
+                .findById(userId)
+                .orElseThrow(() -> new UserNotValidException("invalid user id")));
     }
 
     public int addUser(User user) {
