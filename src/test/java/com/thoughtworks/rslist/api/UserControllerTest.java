@@ -2,11 +2,14 @@ package com.thoughtworks.rslist.api;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thoughtworks.rslist.domain.User;
+import com.thoughtworks.rslist.po.UserPO;
+import com.thoughtworks.rslist.repository.UserRepository;
 import com.thoughtworks.rslist.service.UserService;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -28,12 +31,18 @@ class UserControllerTest {
 
     @Autowired private UserService userService;
 
+    @Autowired private UserRepository userRepository;
+
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
+
     @BeforeEach
     void setup() {
-        userService.init(Arrays.asList(
-                new User("user1", 20, "male", "user1@test.com", "18888888888"),
-                new User("user2", 20, "female", "user2@test.com", "18888888888"),
-                new User("user3", 20, "female", "user3@test.com", "18888888888")
+        userRepository.deleteAll();
+        userRepository.saveAll(Arrays.asList(
+                new UserPO("user1", 20, "male", "user1@test.com", "18888888888"),
+                new UserPO("user2", 20, "female", "user2@test.com", "18888888888"),
+                new UserPO("user3", 20, "female", "user3@test.com", "18888888888")
         ));
     }
 
@@ -45,7 +54,6 @@ class UserControllerTest {
                 new User("user2", 20, "female", "user2@test.com", "18888888888"),
                 new User("user3", 20, "female", "user3@test.com", "18888888888")
         ));
-        ObjectMapper objectMapper = new ObjectMapper();
         String jsonString = objectMapper.writeValueAsString(userList);
 
         mockMvc.perform(get("/users"))
@@ -57,12 +65,11 @@ class UserControllerTest {
     @Order(1)
     void should_add_user_with_correct_format() throws Exception {
         User newUser = new User("newUser", 20, "male", "new@test.com", "18888888888");
-        ObjectMapper objectMapper = new ObjectMapper();
         String jsonString = objectMapper.writeValueAsString(newUser);
 
         mockMvc.perform(post("/user").content(jsonString).contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isCreated())
-                .andExpect(header().longValue("index", 4));;
+                .andExpect(header().longValue("index", userRepository.findByUserName("newUser").getId()));;
 
         List<User> userList = new ArrayList<>(Arrays.asList(
                 new User("user1", 20, "male", "user1@test.com", "18888888888"),
@@ -85,7 +92,6 @@ class UserControllerTest {
         User wrongPhoneUser = new User("newUser", 20, "male", "new@test.com", "110");
 
 
-        ObjectMapper objectMapper = new ObjectMapper();
         String jsonString = objectMapper.writeValueAsString(tooLangNameUser);
         mockMvc.perform(post("/user").content(jsonString).contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
@@ -106,7 +112,6 @@ class UserControllerTest {
 
     @Test
     void should_return_all_users_and_rename_fields() throws Exception {
-        ObjectMapper objectMapper = new ObjectMapper();
         String expectJson = objectMapper.writeValueAsString(Arrays.asList(
                 new User("user1", 20, "male", "user1@test.com", "18888888888"),
                 new User("user2", 20, "female", "user2@test.com", "18888888888"),
@@ -125,7 +130,6 @@ class UserControllerTest {
 
     @Test
     void should_get_user_given_index() throws Exception {
-        ObjectMapper objectMapper = new ObjectMapper();
         String expect = objectMapper.writeValueAsString(new User("user1", 20, "male", "user1@test.com", "18888888888"));
 
         mockMvc.perform(get("/user/1"))

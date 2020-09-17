@@ -28,8 +28,8 @@ public class UserController {
 
     @PostMapping("/user")
     public ResponseEntity<Void> addUser(@RequestBody @Valid User user){
-        int index = userService.addUser(user);
-        return ResponseEntity.status(HttpStatus.CREATED).header("index", String.valueOf(index + 1)).build();
+        int userId = userService.addUser(user);
+        return ResponseEntity.status(HttpStatus.CREATED).header("index", String.valueOf(userId)).build();
     }
 
     @GetMapping("/user/{index}")

@@ -1,23 +1,35 @@
 package com.thoughtworks.rslist.service;
 
 import com.thoughtworks.rslist.domain.User;
+import com.thoughtworks.rslist.po.UserPO;
+import com.thoughtworks.rslist.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class UserService {
     private final List<User> userList = new ArrayList<>();
 
-    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
+    @Autowired private UserRepository userRepository;
+
     public boolean isExistByName(String userName) {
-        return userList.stream().anyMatch((user -> user.getUserName().equals(userName)));
+        return userRepository.existsByUserName(userName);
     }
 
     public List<User> getUserList() {
-        return userList;
+        return userRepository.findAll().stream()
+                .map(userPO -> new User(
+                        userPO.getUserName(),
+                        userPO.getAge(),
+                        userPO.getGender(),
+                        userPO.getEmail(),
+                        userPO.getPhone()))
+                .collect(Collectors.toList());
     }
 
     public User getUser(String userName) {
@@ -33,8 +45,14 @@ public class UserService {
 
     public int addUser(User user) {
         if (!isExistByName(user.getUserName())) {
-            userList.add(user);
-            return userList.size() - 1;
+            UserPO userPO = new UserPO(
+                    user.getUserName(),
+                    user.getAge(),
+                    user.getGender(),
+                    user.getEmail(),
+                    user.getPhone());
+            userRepository.save(userPO);
+            return userPO.getId();
         }
         return -1;
     }
@@ -48,6 +66,7 @@ public class UserService {
         userList.addAll(users);
     }
 
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public boolean isExistById(int userId) {
         return userId > 0 && userId <= userList.size();
     }
