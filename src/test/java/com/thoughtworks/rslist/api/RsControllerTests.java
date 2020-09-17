@@ -156,7 +156,8 @@ class RsControllerTests {
         RsEvent rsEvent = new RsEvent("第一条事件", "无标签", defaultUserId);
         String json = objectMapper.writeValueAsString(rsEvent);
 
-        mockMvc.perform(get("/rs/1"))
+        final int eventId = findIdByRsEvent(rsEvent);
+        mockMvc.perform(get("/rs/{eventId}", eventId))
                 .andExpect(content().json(json))
                 .andExpect(status().isOk());
     }
@@ -267,14 +268,16 @@ class RsControllerTests {
     }
 
     @Test
-    void should_delete_event_given_index() throws Exception {
+    void should_delete_event_given_event_id() throws Exception {
         List<RsEvent> rsList = new ArrayList<>(Arrays.asList(
                 new RsEvent("第二条事件", "无标签", defaultUserId),
                 new RsEvent("第三条事件", "无标签", defaultUserId)));
 
         String jsonString = objectMapper.writeValueAsString(rsList);
 
-        mockMvc.perform(delete("/rs/1")).andExpect(status().isOk());
+        RsEvent targetEvent = new RsEvent("第一条事件", "无标签", defaultUserId);
+        final int eventId = findIdByRsEvent(targetEvent);
+        mockMvc.perform(delete("/rs/{eventId}", eventId)).andExpect(status().isOk());
 
         mockMvc.perform(get("/rs/list"))
                 .andExpect(content().json(jsonString))
@@ -289,10 +292,10 @@ class RsControllerTests {
     }
 
     @Test
-    void should_throw_given_out_range_index2() throws Exception {
-        mockMvc.perform(get("/rs/4"))
+    void should_throw_given_wrong_event_id() throws Exception {
+        mockMvc.perform(get("/rs/99999"))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error", is("invalid index")));
+                .andExpect(jsonPath("$.error", is("invalid event id")));
     }
 
     private int findIdByRsEvent(RsEvent rsEvent) {

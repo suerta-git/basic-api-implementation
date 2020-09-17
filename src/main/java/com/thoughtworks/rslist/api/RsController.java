@@ -48,9 +48,9 @@ public class RsController {
     return ResponseEntity.ok().build();
   }
 
-  @DeleteMapping("/rs/{index}")
-  public ResponseEntity<Void> deleteRsEventOn(@PathVariable int index) {
-    rsService.deleteRsEventOn(index - 1);
+  @DeleteMapping("/rs/{eventId}")
+  public ResponseEntity<Void> deleteRsEventOn(@PathVariable int eventId) {
+    rsService.deleteRsEvent(eventId);
     return ResponseEntity.ok().build();
   }
 }

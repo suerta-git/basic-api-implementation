@@ -81,13 +81,11 @@ public class RsService {
         rsRepository.save(newRsEventPO);
     }
 
-    public void deleteRsEventOn(int index) {
-        rsList.remove(index);
-    }
-
-    public void init(List<RsEvent> rsEvents) {
-        rsList.clear();
-        rsList.addAll(rsEvents);
+    public void deleteRsEvent(int eventId) {
+        if (!rsRepository.existsById(eventId)) {
+            throw new RsEventNotValidException("invalid event id");
+        }
+        rsRepository.deleteById(eventId);
     }
 
     private RsEventPO toRsEventPO(RsEvent rsEvent) {
