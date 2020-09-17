@@ -145,4 +145,13 @@ class UserControllerTest {
 
         assertFalse(userRepository.existsById(userId));
     }
+
+    @Test
+    void should_throw_when_delete_user_given_wrong_user_id() throws Exception {
+        int wrongId = 99999;
+
+        mockMvc.perform(delete("/user/{userId}", wrongId))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error", is("invalid user id")));
+    }
 }

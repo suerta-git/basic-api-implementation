@@ -79,7 +79,7 @@ public class UserService {
 
     public void deleteUser(int userId) {
         if (!isExistById(userId)) {
-            throw new UserNotValidException("invalid param");
+            throw new UserNotValidException("invalid user id");
         }
         userRepository.deleteById(userId);
     }

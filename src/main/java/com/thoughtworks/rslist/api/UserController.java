@@ -49,4 +49,11 @@ public class UserController {
         logger.error("Here is a invalid user");
         return ResponseEntity.badRequest().body(new Error("invalid user"));
     }
+
+
+    @ExceptionHandler(UserNotValidException.class)
+    private ResponseEntity<Error> exceptionHandler(UserNotValidException e){
+        logger.error("Here is a " + e.getMessage());
+        return ResponseEntity.badRequest().body(new Error(e.getMessage()));
+    }
 }
