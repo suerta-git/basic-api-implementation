@@ -102,6 +102,42 @@ class RsControllerTests {
     }
 
     @Test
+    void should_refuse_when_add_event_given_not_existing_user() throws Exception {
+        int newUser = 9999999;
+        RsEvent rsEvent = new RsEvent("whatever", "whatever", newUser);
+        String json = objectMapper.writeValueAsString(rsEvent);
+
+        mockMvc.perform(post("/rs/event").content(json).contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void should_add_event_given_existing_user() throws Exception {
+        RsEvent rsEvent = new RsEvent("whatever", "whatever", defaultUserId);
+        String json = objectMapper.writeValueAsString(rsEvent);
+
+        mockMvc.perform(post("/rs/event").content(json).contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isCreated())
+                .andExpect(header().longValue("eventId", findIdByRsEvent(rsEvent)));
+    }
+
+    @Test
+    void should_refuse_when_add_event_given_null_fields() throws Exception {
+        RsEvent nullEventNameEvent = new RsEvent(null, "whatever", defaultUserId);
+        RsEvent nullKeyWordEvent = new RsEvent("whatever", null, defaultUserId);
+
+        String nullEventNameJson = objectMapper.writeValueAsString(nullEventNameEvent);
+        String nullKeyWordJson = objectMapper.writeValueAsString(nullKeyWordEvent);
+
+        mockMvc.perform(post("/rs/event").content(nullEventNameJson).contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error", is("invalid param")));
+        mockMvc.perform(post("/rs/event").content(nullKeyWordJson).contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error", is("invalid param")));
+    }
+
+    @Test
     void should_get_one_event() throws Exception {
         RsEvent rsEvent = new RsEvent("第一条事件", "无标签", defaultUserId);
         String json = objectMapper.writeValueAsString(rsEvent);
@@ -180,53 +216,6 @@ class RsControllerTests {
         mockMvc.perform(get("/rs/list"))
                 .andExpect(content().json(jsonString))
                 .andExpect(status().isOk());
-    }
-
-//    @Test
-//    void should_refuse_when_add_event_given_user_with_wrong_format() throws Exception {
-//        User tooLangNameUser = new User("too_lang_name", 20, "male", "test@test.com", "10987654321");
-//        RsEvent rsEvent = new RsEvent("whatever", "whatever", tooLangNameUser);
-//        String json = objectMapper.writeValueAsString(rsEvent);
-//
-//        mockMvc.perform(post("/rs/event").content(json).contentType(MediaType.APPLICATION_JSON))
-//                .andExpect(status().isBadRequest())
-//                .andExpect(jsonPath("$.error", is("invalid param")));
-//    }
-
-    @Test
-    void should_refuse_when_add_event_given_not_existing_user() throws Exception {
-        int newUser = 999;
-        RsEvent rsEvent = new RsEvent("whatever", "whatever", newUser);
-        String json = objectMapper.writeValueAsString(rsEvent);
-
-        mockMvc.perform(post("/rs/event").content(json).contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    void should_add_event_given_existing_user() throws Exception {
-        RsEvent rsEvent = new RsEvent("whatever", "whatever", defaultUserId);
-        String json = objectMapper.writeValueAsString(rsEvent);
-
-        mockMvc.perform(post("/rs/event").content(json).contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isCreated())
-                .andExpect(header().longValue("index", 4));
-    }
-
-    @Test
-    void should_refuse_when_add_event_given_null_fields() throws Exception {
-        RsEvent nullEventNameEvent = new RsEvent(null, "whatever", defaultUserId);
-        RsEvent nullKeyWordEvent = new RsEvent("whatever", null, defaultUserId);
-
-        String nullEventNameJson = objectMapper.writeValueAsString(nullEventNameEvent);
-        String nullKeyWordJson = objectMapper.writeValueAsString(nullKeyWordEvent);
-
-        mockMvc.perform(post("/rs/event").content(nullEventNameJson).contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error", is("invalid param")));
-        mockMvc.perform(post("/rs/event").content(nullKeyWordJson).contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error", is("invalid param")));
     }
 
     @Test
