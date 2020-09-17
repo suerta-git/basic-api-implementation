@@ -21,13 +21,14 @@ public class UserController {
     private final Logger logger = LoggerFactory.getLogger(UserController.class);
 
     @GetMapping("/user")
-    public List<User> getUserList() {
-        return userService.getUserList();
+    public ResponseEntity<List<User>> getUserList() {
+        return ResponseEntity.ok(userService.getUserList());
     }
 
     @PostMapping("/user")
-    public void addUser(@RequestBody @Valid User user){
+    public ResponseEntity addUser(@RequestBody @Valid User user){
         userService.addUser(user);
+        return ResponseEntity.ok().build();
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
