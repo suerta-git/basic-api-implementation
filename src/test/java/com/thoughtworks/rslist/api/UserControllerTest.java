@@ -9,7 +9,6 @@ import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.data.jpa.repository.Query;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -18,6 +17,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -69,7 +69,7 @@ class UserControllerTest {
 
         mockMvc.perform(post("/user").content(jsonString).contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isCreated())
-                .andExpect(header().longValue("id", userRepository.findByUserName("newUser").getId()));;
+                .andExpect(header().longValue("id", userRepository.findIdByUserName("newUser")));;
 
         List<User> userList = new ArrayList<>(Arrays.asList(
                 new User("user1", 20, "male", "user1@test.com", "18888888888"),
@@ -129,11 +129,20 @@ class UserControllerTest {
     }
 
     @Test
-    void should_get_user_given_index() throws Exception {
+    void should_get_user_given_user_id() throws Exception {
         String expect = objectMapper.writeValueAsString(new User("user1", 20, "male", "user1@test.com", "18888888888"));
 
-        mockMvc.perform(get("/user/{userId}", userRepository.findByUserName("user1").getId()))
+        mockMvc.perform(get("/user/{userId}", userRepository.findIdByUserName("user1")))
                 .andExpect(content().json(expect))
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    void should_remove_user_given_user_id() throws Exception {
+        int userId = userRepository.findIdByUserName("user1");
+
+        mockMvc.perform(delete("/user/{userId}", userId)).andExpect(status().isOk());
+
+        assertFalse(userRepository.existsById(userId));
     }
 }

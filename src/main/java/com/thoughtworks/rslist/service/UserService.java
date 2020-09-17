@@ -1,6 +1,7 @@
 package com.thoughtworks.rslist.service;
 
 import com.thoughtworks.rslist.domain.User;
+import com.thoughtworks.rslist.exception.UserNotValidException;
 import com.thoughtworks.rslist.po.UserPO;
 import com.thoughtworks.rslist.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -74,5 +75,12 @@ public class UserService {
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public boolean isExistById(int userId) {
         return userRepository.existsById(userId);
+    }
+
+    public void deleteUser(int userId) {
+        if (!isExistById(userId)) {
+            throw new UserNotValidException("invalid param");
+        }
+        userRepository.deleteById(userId);
     }
 }
