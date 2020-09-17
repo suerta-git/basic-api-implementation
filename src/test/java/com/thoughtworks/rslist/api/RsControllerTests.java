@@ -122,6 +122,20 @@ class RsControllerTests {
     }
 
     @Test
+    void should_refuse_when_add_event_given_existing_event() throws Exception {
+        RsEvent rsEvent = new RsEvent("whatever", "whatever", defaultUserId);
+        String json = objectMapper.writeValueAsString(rsEvent);
+
+        mockMvc.perform(post("/rs/event").content(json).contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isCreated())
+                .andExpect(header().longValue("eventId", findIdByRsEvent(rsEvent)));
+
+        mockMvc.perform(post("/rs/event").content(json).contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error", is("event exists")));
+    }
+
+    @Test
     void should_refuse_when_add_event_given_null_fields() throws Exception {
         RsEvent nullEventNameEvent = new RsEvent(null, "whatever", defaultUserId);
         RsEvent nullKeyWordEvent = new RsEvent("whatever", null, defaultUserId);

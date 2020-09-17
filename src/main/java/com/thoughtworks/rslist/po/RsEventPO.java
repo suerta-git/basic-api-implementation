@@ -1,14 +1,12 @@
 package com.thoughtworks.rslist.po;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import java.util.Objects;
 
 @Entity
 @Builder
@@ -27,5 +25,20 @@ public class RsEventPO {
         this.eventName = eventName;
         this.keyWord = keyWord;
         this.userId = userId;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        RsEventPO rsEventPO = (RsEventPO) o;
+        return eventName.equals(rsEventPO.eventName) &&
+                keyWord.equals(rsEventPO.keyWord) &&
+                userId.equals(rsEventPO.userId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(eventName, keyWord, userId);
     }
 }
