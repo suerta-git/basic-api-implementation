@@ -7,7 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 @Service
@@ -29,11 +28,9 @@ public class RsService {
     }
 
     public int addRsEvent(RsEvent rsEvent) {
-        final String userName = rsEvent.getUser().getUserName();
-        if (!userService.isExistByName(userName)) {
-            userService.addUser(rsEvent.getUser());
-        } else {
-            rsEvent.setUser(userService.getUser(userName));
+        final int userId = rsEvent.getUserId();
+        if (!userService.isExistById(userId)) {
+            throw new RsEventNotValidException("invalid param");
         }
         rsList.add(rsEvent);
         return rsList.size() - 1;
@@ -53,16 +50,12 @@ public class RsService {
         if (update.getKeyWord() != null) {
             rsList.get(index).setKeyWord(update.getKeyWord());
         }
-        if (update.getUser() != null) {
-            final String userName = update.getUser().getUserName();
-            User correctUser = update.getUser();
-
-            if (!userService.isExistByName(userName)) {
-                userService.addUser(correctUser);
-            } else {
-                correctUser = userService.getUser(userName);
+        if (update.getUserId() != null) {
+            final int userId = update.getUserId();
+            if (!userService.isExistById(userId)) {
+                throw new RsEventNotValidException("invalid param");
             }
-            rsList.get(index).setUser(correctUser);
+            rsList.get(index).setUserId(userId);
         }
     }
 

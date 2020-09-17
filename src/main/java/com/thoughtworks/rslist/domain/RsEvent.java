@@ -8,13 +8,13 @@ public class RsEvent {
     private String eventName;
     @NotNull
     private String keyWord;
-    @Valid
-    private User user;
+    @NotNull
+    private Integer userId;
 
-    public RsEvent(String eventName, String keyWord, User user) {
+    public RsEvent(String eventName, String keyWord, int userId) {
         this.eventName = eventName;
         this.keyWord = keyWord;
-        this.user = user;
+        this.userId = userId;
     }
 
     public RsEvent() {
@@ -36,11 +36,11 @@ public class RsEvent {
         this.keyWord = keyWord;
     }
 
-    public User getUser() {
-        return user;
+    public Integer getUserId() {
+        return userId;
     }
 
-    public void setUser(User user) {
-        this.user = user;
+    public void setUserId(Integer userId) {
+        this.userId = userId;
     }
 }

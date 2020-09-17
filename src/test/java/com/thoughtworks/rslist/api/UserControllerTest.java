@@ -2,6 +2,8 @@ package com.thoughtworks.rslist.api;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thoughtworks.rslist.domain.User;
+import com.thoughtworks.rslist.po.UserPO;
+import com.thoughtworks.rslist.repository.UserRepository;
 import com.thoughtworks.rslist.service.UserService;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +17,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -28,12 +31,18 @@ class UserControllerTest {
 
     @Autowired private UserService userService;
 
+    @Autowired private UserRepository userRepository;
+
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
+
     @BeforeEach
     void setup() {
-        userService.init(Arrays.asList(
-                new User("user1", 20, "male", "user1@test.com", "18888888888"),
-                new User("user2", 20, "female", "user2@test.com", "18888888888"),
-                new User("user3", 20, "female", "user3@test.com", "18888888888")
+        userRepository.deleteAll();
+        userRepository.saveAll(Arrays.asList(
+                new UserPO("user1", 20, "male", "user1@test.com", "18888888888"),
+                new UserPO("user2", 20, "female", "user2@test.com", "18888888888"),
+                new UserPO("user3", 20, "female", "user3@test.com", "18888888888")
         ));
     }
 
@@ -45,7 +54,6 @@ class UserControllerTest {
                 new User("user2", 20, "female", "user2@test.com", "18888888888"),
                 new User("user3", 20, "female", "user3@test.com", "18888888888")
         ));
-        ObjectMapper objectMapper = new ObjectMapper();
         String jsonString = objectMapper.writeValueAsString(userList);
 
         mockMvc.perform(get("/users"))
@@ -57,12 +65,11 @@ class UserControllerTest {
     @Order(1)
     void should_add_user_with_correct_format() throws Exception {
         User newUser = new User("newUser", 20, "male", "new@test.com", "18888888888");
-        ObjectMapper objectMapper = new ObjectMapper();
         String jsonString = objectMapper.writeValueAsString(newUser);
 
         mockMvc.perform(post("/user").content(jsonString).contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isCreated())
-                .andExpect(header().longValue("index", 4));;
+                .andExpect(header().longValue("id", userRepository.findIdByUserName("newUser")));;
 
         List<User> userList = new ArrayList<>(Arrays.asList(
                 new User("user1", 20, "male", "user1@test.com", "18888888888"),
@@ -85,7 +92,6 @@ class UserControllerTest {
         User wrongPhoneUser = new User("newUser", 20, "male", "new@test.com", "110");
 
 
-        ObjectMapper objectMapper = new ObjectMapper();
         String jsonString = objectMapper.writeValueAsString(tooLangNameUser);
         mockMvc.perform(post("/user").content(jsonString).contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
@@ -106,7 +112,6 @@ class UserControllerTest {
 
     @Test
     void should_return_all_users_and_rename_fields() throws Exception {
-        ObjectMapper objectMapper = new ObjectMapper();
         String expectJson = objectMapper.writeValueAsString(Arrays.asList(
                 new User("user1", 20, "male", "user1@test.com", "18888888888"),
                 new User("user2", 20, "female", "user2@test.com", "18888888888"),
@@ -124,12 +129,38 @@ class UserControllerTest {
     }
 
     @Test
-    void should_get_user_given_index() throws Exception {
-        ObjectMapper objectMapper = new ObjectMapper();
+    void should_get_user_given_user_id() throws Exception {
         String expect = objectMapper.writeValueAsString(new User("user1", 20, "male", "user1@test.com", "18888888888"));
 
-        mockMvc.perform(get("/user/1"))
+        mockMvc.perform(get("/user/{userId}", userRepository.findIdByUserName("user1")))
                 .andExpect(content().json(expect))
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    void should_throw_when_get_user_given_wrong_user_id() throws Exception {
+        int wrongId = 99999;
+
+        mockMvc.perform(get("/user/{userId}", wrongId))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error", is("invalid user id")));
+    }
+
+    @Test
+    void should_remove_user_given_user_id() throws Exception {
+        int userId = userRepository.findIdByUserName("user1");
+
+        mockMvc.perform(delete("/user/{userId}", userId)).andExpect(status().isOk());
+
+        assertFalse(userRepository.existsById(userId));
+    }
+
+    @Test
+    void should_throw_when_delete_user_given_wrong_user_id() throws Exception {
+        int wrongId = 99999;
+
+        mockMvc.perform(delete("/user/{userId}", wrongId))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error", is("invalid user id")));
     }
 }

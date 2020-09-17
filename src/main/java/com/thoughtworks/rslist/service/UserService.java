@@ -1,50 +1,88 @@
 package com.thoughtworks.rslist.service;
 
 import com.thoughtworks.rslist.domain.User;
+import com.thoughtworks.rslist.exception.UserNotValidException;
+import com.thoughtworks.rslist.po.UserPO;
+import com.thoughtworks.rslist.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class UserService {
-    private final List<User> userList = new ArrayList<>();
 
-    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
+    @Autowired private UserRepository userRepository;
+
     public boolean isExistByName(String userName) {
-        return userList.stream().anyMatch((user -> user.getUserName().equals(userName)));
+        return userRepository.existsByUserName(userName);
     }
 
     public List<User> getUserList() {
-        return userList;
+        return userRepository.findAll().stream()
+                .map(userPO -> new User(
+                        userPO.getUserName(),
+                        userPO.getAge(),
+                        userPO.getGender(),
+                        userPO.getEmail(),
+                        userPO.getPhone()))
+                .collect(Collectors.toList());
     }
 
     public User getUser(String userName) {
-        return userList.stream()
-                .filter(user -> user.getUserName().equals(userName))
-                .findFirst()
-                .orElse(null);
+        return toUser(userRepository.findByUserName(userName));
     }
 
-    public User getUser(int index) {
-        return userList.get(index);
+    public User getUser(int userId) {
+        return toUser(userRepository
+                .findById(userId)
+                .orElseThrow(() -> new UserNotValidException("invalid user id")));
     }
 
     public int addUser(User user) {
         if (!isExistByName(user.getUserName())) {
-            userList.add(user);
-            return userList.size() - 1;
+            UserPO userPO = toUserPO(user);
+            userRepository.save(userPO);
+            return userPO.getId();
         }
         return -1;
     }
 
-    public boolean contains(User user) {
-        return userList.contains(user);
+    public boolean isExist(User user) {
+        return userRepository.existsByUserName(user.getUserName());
     }
 
-    public void init(List<User> users) {
-        userList.clear();
-        userList.addAll(users);
+    private UserPO toUserPO(User user) {
+        return new UserPO(
+                user.getUserName(),
+                user.getAge(),
+                user.getGender(),
+                user.getEmail(),
+                user.getPhone());
+    }
+
+    private User toUser(UserPO userPO) {
+        return new User(
+                userPO.getUserName(),
+                userPO.getAge(),
+                userPO.getGender(),
+                userPO.getEmail(),
+                userPO.getPhone());
+    }
+
+
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
+    public boolean isExistById(int userId) {
+        return userRepository.existsById(userId);
+    }
+
+    public void deleteUser(int userId) {
+        if (!isExistById(userId)) {
+            throw new UserNotValidException("invalid user id");
+        }
+        userRepository.deleteById(userId);
     }
 }

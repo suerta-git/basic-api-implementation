@@ -32,21 +32,15 @@ class RsControllerTests {
     @Autowired private UserService userService;
     @Autowired private RsService rsService;
 
-    private User defaultUser;
+    private int defaultUser;
 
     @BeforeEach
     void setup() {
-        defaultUser = new User("default", 20, "male", "default@test.com", "10987654321");
+        defaultUser = 1;
         rsService.init(Arrays.asList(
                 new RsEvent("第一条事件", "无标签", defaultUser),
                 new RsEvent("第二条事件", "无标签", defaultUser),
                 new RsEvent("第三条事件", "无标签", defaultUser)));
-        userService.init(Arrays.asList(
-                defaultUser,
-                new User("user1", 20, "male", "user1@test.com", "18888888888"),
-                new User("user2", 20, "female", "user2@test.com", "18888888888"),
-                new User("user3", 20, "female", "user3@test.com", "18888888888")
-        ));
     }
 
     @Test
@@ -76,26 +70,26 @@ class RsControllerTests {
                 .andExpect(status().isOk());
     }
 
-    @Test
-    void should_can_post_new_event() throws Exception {
-        User newUser = new User("other", 20, "male", "default@test.com", "10987654321");
-        RsEvent rsEvent = new RsEvent("猪肉涨价了", "经济", newUser);
-        String json = objectMapper.writeValueAsString(rsEvent);
-        mockMvc.perform(post("/rs/event").content(json).contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isCreated())
-                .andExpect(header().longValue("index", 4));
-
-        List<RsEvent> rsList = new ArrayList<>(Arrays.asList(
-                new RsEvent("第一条事件", "无标签", defaultUser),
-                new RsEvent("第二条事件", "无标签", defaultUser),
-                new RsEvent("第三条事件", "无标签", defaultUser),
-                rsEvent));
-
-        String jsonString = objectMapper.writeValueAsString(rsList);
-        mockMvc.perform(get("/rs/list"))
-                .andExpect(content().json(jsonString))
-                .andExpect(status().isOk());
-    }
+//    @Test
+//    void should_can_post_new_event() throws Exception {
+//        User newUser = new User("other", 20, "male", "default@test.com", "10987654321");
+//        RsEvent rsEvent = new RsEvent("猪肉涨价了", "经济", newUser);
+//        String json = objectMapper.writeValueAsString(rsEvent);
+//        mockMvc.perform(post("/rs/event").content(json).contentType(MediaType.APPLICATION_JSON))
+//                .andExpect(status().isCreated())
+//                .andExpect(header().longValue("index", 4));
+//
+//        List<RsEvent> rsList = new ArrayList<>(Arrays.asList(
+//                new RsEvent("第一条事件", "无标签", defaultUser),
+//                new RsEvent("第二条事件", "无标签", defaultUser),
+//                new RsEvent("第三条事件", "无标签", defaultUser),
+//                rsEvent));
+//
+//        String jsonString = objectMapper.writeValueAsString(rsList);
+//        mockMvc.perform(get("/rs/list"))
+//                .andExpect(content().json(jsonString))
+//                .andExpect(status().isOk());
+//    }
 
     @Test
     void should_get_one_event() throws Exception {
@@ -108,7 +102,7 @@ class RsControllerTests {
     }
 
     @Test
-    void should_update_event_given_two_fields() throws Exception {
+    void should_update_event_given_all_fields() throws Exception {
         RsEvent rsEvent = new RsEvent("第一条事件（新标签）", "新标签", defaultUser);
         String json = objectMapper.writeValueAsString(rsEvent);
 
@@ -150,11 +144,10 @@ class RsControllerTests {
                 .andExpect(status().isOk());
 
         RsEvent thirdTestEvent = new RsEvent();
-        User newUser = new User("newUser", 20, "male", "default@test.com", "10987654321");
-        thirdTestEvent.setUser(newUser);
+        thirdTestEvent.setUserId(2);
         String thirdJson = objectMapper.writeValueAsString(thirdTestEvent);
 
-        RsEvent thirdExpectRsEvent = new RsEvent("第一条事件（新）", "只改标签", newUser);
+        RsEvent thirdExpectRsEvent = new RsEvent("第一条事件（新）", "只改标签", 2);
         String thirdExpectJson = objectMapper.writeValueAsString(thirdExpectRsEvent);
 
         mockMvc.perform(patch("/rs/1").content(thirdJson).contentType(MediaType.APPLICATION_JSON))
@@ -179,56 +172,41 @@ class RsControllerTests {
                 .andExpect(status().isOk());
     }
 
+//    @Test
+//    void should_refuse_when_add_event_given_user_with_wrong_format() throws Exception {
+//        User tooLangNameUser = new User("too_lang_name", 20, "male", "test@test.com", "10987654321");
+//        RsEvent rsEvent = new RsEvent("whatever", "whatever", tooLangNameUser);
+//        String json = objectMapper.writeValueAsString(rsEvent);
+//
+//        mockMvc.perform(post("/rs/event").content(json).contentType(MediaType.APPLICATION_JSON))
+//                .andExpect(status().isBadRequest())
+//                .andExpect(jsonPath("$.error", is("invalid param")));
+//    }
+
     @Test
-    void should_refuse_when_add_event_given_user_with_wrong_format() throws Exception {
-        User tooLangNameUser = new User("too_lang_name", 20, "male", "test@test.com", "10987654321");
-        RsEvent rsEvent = new RsEvent("whatever", "whatever", tooLangNameUser);
+    void should_refuse_when_add_event_given_not_existing_user() throws Exception {
+        int newUser = 999;
+        RsEvent rsEvent = new RsEvent("whatever", "whatever", newUser);
         String json = objectMapper.writeValueAsString(rsEvent);
 
         mockMvc.perform(post("/rs/event").content(json).contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error", is("invalid param")));
+                .andExpect(status().isBadRequest());
     }
 
     @Test
-    void should_add_new_user_when_add_event_given_new_user() throws Exception {
-        User newUser = new User("newUser", 80, "female", "someone@test.com", "11234567890");
-        RsEvent rsEvent = new RsEvent("whatever", "whatever", newUser);
+    void should_add_event_given_existing_user() throws Exception {
+        RsEvent rsEvent = new RsEvent("whatever", "whatever", defaultUser);
         String json = objectMapper.writeValueAsString(rsEvent);
 
         mockMvc.perform(post("/rs/event").content(json).contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isCreated())
                 .andExpect(header().longValue("index", 4));
-
-        assertTrue(userService.contains(newUser));
-    }
-
-    @Test
-    void should_not_add_user_when_add_event_given_existing_user() throws Exception {
-        User existingUser = new User("user1", 80, "female", "someone@test.com", "11234567890");
-        RsEvent rsEvent = new RsEvent("whatever", "whatever", existingUser);
-        String json = objectMapper.writeValueAsString(rsEvent);
-
-        mockMvc.perform(post("/rs/event").content(json).contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isCreated())
-                .andExpect(header().longValue("index", 4));;
-
-        assertFalse(userService.contains(existingUser));
-
-        mockMvc.perform(get("/rs/4"))
-                .andExpect(jsonPath("$.user.user_name", is("user1")))
-                .andExpect(jsonPath("$.user.user_age", is(20)))
-                .andExpect(jsonPath("$.user.user_gender", is("male")))
-                .andExpect(jsonPath("$.user.user_email", is("user1@test.com")))
-                .andExpect(jsonPath("$.user.user_phone", is("18888888888")))
-                .andExpect(status().isOk());
     }
 
     @Test
     void should_refuse_when_add_event_given_null_fields() throws Exception {
-        User newUser = new User("newUser", 80, "female", "someone@test.com", "11234567890");
-        RsEvent nullEventNameEvent = new RsEvent(null, "whatever", newUser);
-        RsEvent nullKeyWordEvent = new RsEvent("whatever", null, newUser);
+        RsEvent nullEventNameEvent = new RsEvent(null, "whatever", defaultUser);
+        RsEvent nullKeyWordEvent = new RsEvent("whatever", null, defaultUser);
 
         String nullEventNameJson = objectMapper.writeValueAsString(nullEventNameEvent);
         String nullKeyWordJson = objectMapper.writeValueAsString(nullKeyWordEvent);
@@ -242,21 +220,26 @@ class RsControllerTests {
     }
 
     @Test
-    void should_use_correct_user_when_update_event_given_existing_user() throws Exception {
-        User existingUser = new User("user1", 80, "female", "someone@test.com", "11234567890");
-        RsEvent rsEvent = new RsEvent(null, null, existingUser);
+    void should_update_event_given_existing_user() throws Exception {
+        RsEvent rsEvent = new RsEvent(null, null, defaultUser);
         String json = objectMapper.writeValueAsString(rsEvent);
 
         mockMvc.perform(patch("/rs/1").content(json).contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
 
-        RsEvent expectRsEvent = new RsEvent(
-                "第一条事件",
-                "无标签",
-                new User("user1", 20, "male", "user1@test.com", "18888888888"));
+        RsEvent expectRsEvent = new RsEvent("第一条事件", "无标签", defaultUser);
         String expectJson = objectMapper.writeValueAsString(expectRsEvent);
         mockMvc.perform(get("/rs/1")).andExpect(content().json(expectJson))
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    void should_refuse_when_update_event_given_not_existing_user() throws Exception {
+        RsEvent rsEvent = new RsEvent(null, null, 999);
+        String json = objectMapper.writeValueAsString(rsEvent);
+
+        mockMvc.perform(patch("/rs/1").content(json).contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
     }
 
     @Test
