@@ -1,4 +1,4 @@
-package com.thoughtworks.rslist;
+package com.thoughtworks.rslist.api;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -25,7 +25,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc
-class RsListApplicationTests {
+class RsControllerTests {
     @Autowired private MockMvc mockMvc;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
