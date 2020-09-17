@@ -163,19 +163,25 @@ class RsControllerTests {
 
     @Test
     void should_update_event_given_all_fields() throws Exception {
-        RsEvent rsEvent = new RsEvent("第一条事件（新标签）", "新标签", defaultUserId);
+        RsEvent targetEvent = new RsEvent("第一条事件", "无标签", defaultUserId);
+        final int eventId = findIdByRsEvent(targetEvent);
+
+        RsEvent rsEvent = new RsEvent("第一条事件（新标签）", "新标签", userRepository.findIdByUserName("user2"));
         String json = objectMapper.writeValueAsString(rsEvent);
 
-        mockMvc.perform(patch("/rs/1").content(json).contentType(MediaType.APPLICATION_JSON))
+        mockMvc.perform(patch("/rs/{eventId}", eventId).content(json).contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
 
-        mockMvc.perform(get("/rs/1"))
+        mockMvc.perform(get("/rs/{eventId}", eventId))
                 .andExpect(content().json(json))
                 .andExpect(status().isOk());
     }
 
     @Test
     void should_update_event_given_one_field() throws Exception {
+        RsEvent targetEvent = new RsEvent("第一条事件", "无标签", defaultUserId);
+        final int eventId = findIdByRsEvent(targetEvent);
+
         RsEvent firstTestEvent = new RsEvent();
         firstTestEvent.setKeyWord("只改标签");
 
@@ -184,9 +190,9 @@ class RsControllerTests {
         RsEvent firstExpectRsEvent = new RsEvent("第一条事件", "只改标签", defaultUserId);
         String firstExpectJson = objectMapper.writeValueAsString(firstExpectRsEvent);
 
-        mockMvc.perform(patch("/rs/1").content(firstJson).contentType(MediaType.APPLICATION_JSON))
+        mockMvc.perform(patch("/rs/{eventId}", eventId).content(firstJson).contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
-        mockMvc.perform(get("/rs/1"))
+        mockMvc.perform(get("/rs/{eventId}", eventId))
                 .andExpect(content().json(firstExpectJson))
                 .andExpect(status().isOk());
 
@@ -197,24 +203,67 @@ class RsControllerTests {
         RsEvent secondExpectRsEvent = new RsEvent("第一条事件（新）", "只改标签", defaultUserId);
         String secondExpectJson = objectMapper.writeValueAsString(secondExpectRsEvent);
 
-        mockMvc.perform(patch("/rs/1").content(secondJson).contentType(MediaType.APPLICATION_JSON))
+        mockMvc.perform(patch("/rs/{eventId}", eventId).content(secondJson).contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
-        mockMvc.perform(get("/rs/1"))
+        mockMvc.perform(get("/rs/{eventId}", eventId))
                 .andExpect(content().json(secondExpectJson))
                 .andExpect(status().isOk());
 
         RsEvent thirdTestEvent = new RsEvent();
-        thirdTestEvent.setUserId(2);
+        thirdTestEvent.setUserId(userRepository.findIdByUserName("user2"));
         String thirdJson = objectMapper.writeValueAsString(thirdTestEvent);
 
-        RsEvent thirdExpectRsEvent = new RsEvent("第一条事件（新）", "只改标签", 2);
+        RsEvent thirdExpectRsEvent = new RsEvent("第一条事件（新）", "只改标签", userRepository.findIdByUserName("user2"));
         String thirdExpectJson = objectMapper.writeValueAsString(thirdExpectRsEvent);
 
-        mockMvc.perform(patch("/rs/1").content(thirdJson).contentType(MediaType.APPLICATION_JSON))
+        mockMvc.perform(patch("/rs/{eventId}", eventId).content(thirdJson).contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
-        mockMvc.perform(get("/rs/1"))
+        mockMvc.perform(get("/rs/{eventId}", eventId))
                 .andExpect(content().json(thirdExpectJson))
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    void should_update_event_given_existing_user() throws Exception {
+        RsEvent targetEvent = new RsEvent("第一条事件", "无标签", defaultUserId);
+        final int eventId = findIdByRsEvent(targetEvent);
+
+        RsEvent rsEvent = new RsEvent(null, null, userRepository.findIdByUserName("user2"));
+        String json = objectMapper.writeValueAsString(rsEvent);
+
+        mockMvc.perform(patch("/rs/{eventId}", eventId).content(json).contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+
+        RsEvent expectRsEvent = new RsEvent("第一条事件", "无标签", userRepository.findIdByUserName("user2"));
+        String expectJson = objectMapper.writeValueAsString(expectRsEvent);
+        mockMvc.perform(get("/rs/{eventId}", eventId)).andExpect(content().json(expectJson))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void should_refuse_when_update_event_given_not_existing_user() throws Exception {
+        RsEvent targetEvent = new RsEvent("第一条事件", "无标签", defaultUserId);
+        final int eventId = findIdByRsEvent(targetEvent);
+
+        RsEvent rsEvent = new RsEvent(null, null, 9999999);
+        String json = objectMapper.writeValueAsString(rsEvent);
+
+        mockMvc.perform(patch("/rs/{eventId}", eventId).content(json).contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void should_refuse_when_event_after_update_exists() throws Exception {
+        RsEvent rsEvent = new RsEvent("第一条事件", "无标签", userRepository.findIdByUserName("user2"));
+        String json = objectMapper.writeValueAsString(rsEvent);
+        mockMvc.perform(post("/rs/event").content(json).contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isCreated());
+
+        RsEvent update = new RsEvent(null, null, defaultUserId);
+        String updateJson = objectMapper.writeValueAsString(update);
+        mockMvc.perform(patch("/rs/{eventId}", findIdByRsEvent(rsEvent)).content(updateJson).contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error", is("event exists")));
     }
 
     @Test
@@ -230,29 +279,6 @@ class RsControllerTests {
         mockMvc.perform(get("/rs/list"))
                 .andExpect(content().json(jsonString))
                 .andExpect(status().isOk());
-    }
-
-    @Test
-    void should_update_event_given_existing_user() throws Exception {
-        RsEvent rsEvent = new RsEvent(null, null, defaultUserId);
-        String json = objectMapper.writeValueAsString(rsEvent);
-
-        mockMvc.perform(patch("/rs/1").content(json).contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
-
-        RsEvent expectRsEvent = new RsEvent("第一条事件", "无标签", defaultUserId);
-        String expectJson = objectMapper.writeValueAsString(expectRsEvent);
-        mockMvc.perform(get("/rs/1")).andExpect(content().json(expectJson))
-                .andExpect(status().isOk());
-    }
-
-    @Test
-    void should_refuse_when_update_event_given_not_existing_user() throws Exception {
-        RsEvent rsEvent = new RsEvent(null, null, 999);
-        String json = objectMapper.writeValueAsString(rsEvent);
-
-        mockMvc.perform(patch("/rs/1").content(json).contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest());
     }
 
     @Test

@@ -27,6 +27,13 @@ public class RsEventPO {
         this.userId = userId;
     }
 
+    public RsEventPO(RsEventPO rsEventPO) {
+        id = rsEventPO.getId();
+        eventName = rsEventPO.getEventName();
+        keyWord = rsEventPO.getKeyWord();
+        userId = rsEventPO.getUserId();
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

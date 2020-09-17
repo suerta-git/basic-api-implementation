@@ -4,6 +4,7 @@ import com.thoughtworks.rslist.domain.RsEvent;
 import com.thoughtworks.rslist.domain.User;
 import com.thoughtworks.rslist.exception.RsEventNotValidException;
 import com.thoughtworks.rslist.po.RsEventPO;
+import com.thoughtworks.rslist.po.UserPO;
 import com.thoughtworks.rslist.repository.RsRepository;
 import com.thoughtworks.rslist.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,27 +51,34 @@ public class RsService {
         return rsRepository.findAll().contains(toRsEventPO(rsEvent));
     }
 
-    public RsEvent get(int index) {
-        if (index < 0 || index >= size()) {
-            throw new RsEventNotValidException("invalid index");
-        }
-        return rsList.get(index);
+    public RsEvent get(int eventId) {
+        return toRsEvent(rsRepository
+                .findById(eventId)
+                .orElseThrow(() -> new RsEventNotValidException("invalid event id")));
     }
 
-    public void updateRsEventOn(RsEvent update, int index) {
+    public void updateRsEventOn(RsEvent update, int eventId) {
+        RsEventPO rsEventPO = rsRepository.findById(eventId)
+                .orElseThrow(() -> new RsEventNotValidException("invalid event id"));
+
+        RsEventPO newRsEventPO = new RsEventPO(rsEventPO);
         if (update.getEventName() != null) {
-            rsList.get(index).setEventName(update.getEventName());
+            newRsEventPO.setEventName(update.getEventName());
         }
         if (update.getKeyWord() != null) {
-            rsList.get(index).setKeyWord(update.getKeyWord());
+            newRsEventPO.setKeyWord(update.getKeyWord());
         }
         if (update.getUserId() != null) {
             final int userId = update.getUserId();
             if (!userService.isExistById(userId)) {
                 throw new RsEventNotValidException("invalid param");
             }
-            rsList.get(index).setUserId(userId);
+            newRsEventPO.setUserId(userId);
         }
+        if (isContainsRsEvent(toRsEvent(newRsEventPO))) {
+            throw new RsEventNotValidException("event exists");
+        }
+        rsRepository.save(newRsEventPO);
     }
 
     public void deleteRsEventOn(int index) {

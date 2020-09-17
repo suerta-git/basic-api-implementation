@@ -37,14 +37,14 @@ public class RsController {
     return ResponseEntity.status(HttpStatus.CREATED).header("eventId", String.valueOf(eventId)).build();
   }
 
-  @GetMapping("/rs/{index}")
-  public ResponseEntity<RsEvent> getOneRsEvent(@PathVariable int index) {
-    return ResponseEntity.ok().body(rsService.get(index - 1));
+  @GetMapping("/rs/{eventId}")
+  public ResponseEntity<RsEvent> getOneRsEvent(@PathVariable int eventId) {
+    return ResponseEntity.ok().body(rsService.get(eventId));
   }
 
-  @PatchMapping("/rs/{index}")
-  public ResponseEntity<Void> updateRsEventOn(@RequestBody RsEvent update, @PathVariable int index) {
-    rsService.updateRsEventOn(update, index - 1);
+  @PatchMapping("/rs/{eventId}")
+  public ResponseEntity<Void> updateRsEventOn(@RequestBody RsEvent update, @PathVariable int eventId) {
+    rsService.updateRsEventOn(update, eventId);
     return ResponseEntity.ok().build();
   }
 
