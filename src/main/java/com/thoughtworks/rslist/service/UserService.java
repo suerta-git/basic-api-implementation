@@ -47,4 +47,8 @@ public class UserService {
         userList.clear();
         userList.addAll(users);
     }
+
+    public boolean isExistById(int userId) {
+        return userId > 0 && userId <= userList.size();
+    }
 }
