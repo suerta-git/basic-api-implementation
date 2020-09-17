@@ -41,11 +41,6 @@ class RsControllerTests {
                 new RsEvent("第一条事件", "无标签", defaultUser),
                 new RsEvent("第二条事件", "无标签", defaultUser),
                 new RsEvent("第三条事件", "无标签", defaultUser)));
-        userService.init(Arrays.asList(
-                new User("user1", 20, "male", "user1@test.com", "18888888888"),
-                new User("user2", 20, "female", "user2@test.com", "18888888888"),
-                new User("user3", 20, "female", "user3@test.com", "18888888888")
-        ));
     }
 
     @Test

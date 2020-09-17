@@ -13,7 +13,6 @@ import java.util.stream.Collectors;
 
 @Service
 public class UserService {
-    private final List<User> userList = new ArrayList<>();
 
     @Autowired private UserRepository userRepository;
 
@@ -33,41 +32,47 @@ public class UserService {
     }
 
     public User getUser(String userName) {
-        return userList.stream()
-                .filter(user -> user.getUserName().equals(userName))
-                .findFirst()
-                .orElse(null);
+        return toUser(userRepository.findByUserName(userName));
     }
 
-    public User getUser(int index) {
-        return userList.get(index);
+    public User getUser(int userId) {
+        return toUser(userRepository.findById(userId).orElse(new UserPO()));
     }
 
     public int addUser(User user) {
         if (!isExistByName(user.getUserName())) {
-            UserPO userPO = new UserPO(
-                    user.getUserName(),
-                    user.getAge(),
-                    user.getGender(),
-                    user.getEmail(),
-                    user.getPhone());
+            UserPO userPO = toUserPO(user);
             userRepository.save(userPO);
             return userPO.getId();
         }
         return -1;
     }
 
-    public boolean contains(User user) {
-        return userList.contains(user);
+    public boolean isExist(User user) {
+        return userRepository.existsByUserName(user.getUserName());
     }
 
-    public void init(List<User> users) {
-        userList.clear();
-        userList.addAll(users);
+    private UserPO toUserPO(User user) {
+        return new UserPO(
+                user.getUserName(),
+                user.getAge(),
+                user.getGender(),
+                user.getEmail(),
+                user.getPhone());
     }
+
+    private User toUser(UserPO userPO) {
+        return new User(
+                userPO.getUserName(),
+                userPO.getAge(),
+                userPO.getGender(),
+                userPO.getEmail(),
+                userPO.getPhone());
+    }
+
 
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public boolean isExistById(int userId) {
-        return userId > 0 && userId <= userList.size();
+        return userRepository.existsById(userId);
     }
 }

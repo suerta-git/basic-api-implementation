@@ -29,12 +29,12 @@ public class UserController {
     @PostMapping("/user")
     public ResponseEntity<Void> addUser(@RequestBody @Valid User user){
         int userId = userService.addUser(user);
-        return ResponseEntity.status(HttpStatus.CREATED).header("index", String.valueOf(userId)).build();
+        return ResponseEntity.status(HttpStatus.CREATED).header("id", String.valueOf(userId)).build();
     }
 
-    @GetMapping("/user/{index}")
-    public ResponseEntity<User> getUser(@PathVariable int index){
-        return ResponseEntity.ok(userService.getUser(index - 1));
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<User> getUser(@PathVariable int userId){
+        return ResponseEntity.ok(userService.getUser(userId));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
