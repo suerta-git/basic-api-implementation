@@ -1,6 +1,7 @@
 package com.thoughtworks.rslist.api;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.thoughtworks.rslist.api.test_repository.TestRepository;
 import com.thoughtworks.rslist.domain.User;
 import com.thoughtworks.rslist.po.RsEventPO;
 import com.thoughtworks.rslist.po.UserPO;
@@ -32,9 +33,10 @@ class UserControllerTest {
 
     @Autowired private RsRepository rsRepository;
     @Autowired private UserRepository userRepository;
+    @Autowired private TestRepository testRepository;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
-
+    private int notExistingId;
 
     @BeforeEach
     void setup() {
@@ -44,6 +46,7 @@ class UserControllerTest {
                 new UserPO("user2", 20, "female", "user2@test.com", "18888888888"),
                 new UserPO("user3", 20, "female", "user3@test.com", "18888888888")
         ));
+        notExistingId = testRepository.getNextId();
     }
 
     @Test
@@ -139,9 +142,7 @@ class UserControllerTest {
 
     @Test
     void should_throw_when_get_user_given_wrong_user_id() throws Exception {
-        int wrongId = 99999;
-
-        mockMvc.perform(get("/user/{userId}", wrongId))
+        mockMvc.perform(get("/user/{userId}", notExistingId))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error", is("invalid user id")));
     }
@@ -157,9 +158,7 @@ class UserControllerTest {
 
     @Test
     void should_throw_when_delete_user_given_wrong_user_id() throws Exception {
-        int wrongId = 99999;
-
-        mockMvc.perform(delete("/user/{userId}", wrongId))
+        mockMvc.perform(delete("/user/{userId}", notExistingId))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error", is("invalid user id")));
     }
@@ -179,6 +178,5 @@ class UserControllerTest {
     }
 
     // TODO
-    // 1. 删除magic number
     // 2. 实验userPO更改后是否数据库自动更新
 }

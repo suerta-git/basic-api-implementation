@@ -279,7 +279,7 @@ class RsControllerTests {
 
     @Test
     void should_throw_given_wrong_event_id() throws Exception {
-        mockMvc.perform(get("/rs/99999"))
+        mockMvc.perform(get("/rs/{wrongId}", notExistingId))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error", is("invalid event id")));
     }
