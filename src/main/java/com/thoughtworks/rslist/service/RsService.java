@@ -39,16 +39,9 @@ public class RsService {
         if (!userService.isExistById(userId)) {
             throw new RsEventNotValidException("invalid param");
         }
-        if (isContainsRsEvent(rsEvent)) {
-            throw new RsEventNotValidException("event exists");
-        }
         RsEventPO rsEventPO = toRsEventPO(rsEvent);
         rsRepository.save(rsEventPO);
         return rsEventPO.getId();
-    }
-
-    private boolean isContainsRsEvent(RsEvent rsEvent) {
-        return rsRepository.findAll().contains(toRsEventPO(rsEvent));
     }
 
     public RsEvent get(int eventId) {
@@ -74,9 +67,6 @@ public class RsService {
                 throw new RsEventNotValidException("invalid param");
             }
             newRsEventPO.setUserId(userId);
-        }
-        if (isContainsRsEvent(toRsEvent(newRsEventPO))) {
-            throw new RsEventNotValidException("event exists");
         }
         rsRepository.save(newRsEventPO);
     }

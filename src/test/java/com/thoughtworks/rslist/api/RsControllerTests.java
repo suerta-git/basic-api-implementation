@@ -143,7 +143,7 @@ class RsControllerTests {
                 .andReturn();
 
         final MvcResult secondMvcResult = mockMvc.perform(post("/rs/event").content(json).contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isCreated())
                 .andReturn();
 
         assertNotEquals(firstMvcResult.getResponse().getHeader("eventId"),
