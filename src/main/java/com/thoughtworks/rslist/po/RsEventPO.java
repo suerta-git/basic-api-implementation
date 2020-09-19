@@ -3,7 +3,6 @@ package com.thoughtworks.rslist.po;
 import lombok.*;
 
 import javax.persistence.*;
-import java.util.Objects;
 
 @Entity
 @Builder
@@ -11,6 +10,7 @@ import java.util.Objects;
 @AllArgsConstructor
 @Data
 @Table(name = "rsEvent")
+@ToString
 public class RsEventPO {
     @Id @GeneratedValue
     private int id;

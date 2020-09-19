@@ -54,21 +54,20 @@ public class RsService {
         RsEventPO rsEventPO = rsRepository.findById(eventId)
                 .orElseThrow(() -> new RsEventNotValidException("invalid event id"));
 
-        RsEventPO newRsEventPO = new RsEventPO(rsEventPO);
         if (update.getEventName() != null) {
-            newRsEventPO.setEventName(update.getEventName());
+            rsEventPO.setEventName(update.getEventName());
         }
         if (update.getKeyWord() != null) {
-            newRsEventPO.setKeyWord(update.getKeyWord());
+            rsEventPO.setKeyWord(update.getKeyWord());
         }
         if (update.getUserId() != null) {
             final int userId = update.getUserId();
-            newRsEventPO.setUserPO(
+            rsEventPO.setUserPO(
                     userRepository
                             .findById(userId)
                             .orElseThrow(() -> new RsEventNotValidException("invalid param")));
         }
-        rsRepository.save(newRsEventPO);
+        rsRepository.save(rsEventPO);
     }
 
     public void deleteRsEvent(int eventId) {

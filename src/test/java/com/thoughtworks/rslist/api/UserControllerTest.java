@@ -165,7 +165,7 @@ class UserControllerTest {
 
     @Test
     void should_remove_user_and_related_events_given_user_id() throws Exception {
-        UserPO userPO = userRepository.findByUserName("user1");
+        UserPO userPO = userRepository.findByUserName("user1").orElse(new UserPO());
         int userId = userPO.getId();
         RsEventPO rsEventPO = RsEventPO.builder().eventName("whatever").keyWord("whatever").userPO(userPO).build();
         rsRepository.save(rsEventPO);
@@ -176,7 +176,4 @@ class UserControllerTest {
         assertFalse(userRepository.existsById(userId));
         assertFalse(rsRepository.existsById(rsEventId));
     }
-
-    // TODO
-    // 2. 实验userPO更改后是否数据库自动更新
 }

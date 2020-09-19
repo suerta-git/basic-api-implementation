@@ -1,9 +1,6 @@
 package com.thoughtworks.rslist.po;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import javax.persistence.*;
 import java.util.List;
@@ -15,6 +12,19 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserPO {
+    @Override
+    public String toString() {
+        return "UserPO{" +
+                "id=" + id +
+                ", userName='" + userName + '\'' +
+                ", age=" + age +
+                ", gender='" + gender + '\'' +
+                ", email='" + email + '\'' +
+                ", phone='" + phone + '\'' +
+                ", voteNum=" + voteNum +
+                '}';
+    }
+
     public UserPO(String userName, int age, String gender, String email, String phone) {
         this.userName = userName;
         this.age = age;

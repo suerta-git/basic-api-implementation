@@ -32,10 +32,6 @@ public class UserService {
                 .collect(Collectors.toList());
     }
 
-    public User getUser(String userName) {
-        return toUser(userRepository.findByUserName(userName));
-    }
-
     public User getUser(int userId) {
         return toUser(userRepository
                 .findById(userId)
