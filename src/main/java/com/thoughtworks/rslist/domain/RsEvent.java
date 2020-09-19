@@ -1,8 +1,11 @@
 package com.thoughtworks.rslist.domain;
 
+import lombok.EqualsAndHashCode;
+
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
+@EqualsAndHashCode
 public class RsEvent {
     @NotNull
     private String eventName;
