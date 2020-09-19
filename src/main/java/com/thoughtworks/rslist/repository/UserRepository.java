@@ -14,6 +14,9 @@ public interface UserRepository extends CrudRepository<UserPO, Integer> {
 
     UserPO findByUserName(String userName);
 
+    // TODO
+    // use option
+
     @Query(value = "select id from user where user_name = ?1", nativeQuery = true)
     int findIdByUserName(String userName);
 }

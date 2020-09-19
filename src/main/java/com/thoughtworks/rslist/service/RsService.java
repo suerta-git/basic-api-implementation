@@ -63,10 +63,10 @@ public class RsService {
         }
         if (update.getUserId() != null) {
             final int userId = update.getUserId();
-            if (!userService.isExistById(userId)) {
-                throw new RsEventNotValidException("invalid param");
-            }
-            newRsEventPO.setUserId(userId);
+            newRsEventPO.setUserPO(
+                    userRepository
+                            .findById(userId)
+                            .orElseThrow(() -> new RsEventNotValidException("invalid param")));
         }
         rsRepository.save(newRsEventPO);
     }
@@ -82,11 +82,11 @@ public class RsService {
         return RsEventPO.builder()
                 .eventName(rsEvent.getEventName())
                 .keyWord(rsEvent.getKeyWord())
-                .userId(rsEvent.getUserId())
+                .userPO(userRepository.findById(rsEvent.getUserId()).orElse(null))
                 .build();
     }
 
     private RsEvent toRsEvent(RsEventPO rsEventPO) {
-        return new RsEvent(rsEventPO.getEventName(), rsEventPO.getKeyWord(), rsEventPO.getUserId());
+        return new RsEvent(rsEventPO.getEventName(), rsEventPO.getKeyWord(), rsEventPO.getUserPO().getId());
     }
 }

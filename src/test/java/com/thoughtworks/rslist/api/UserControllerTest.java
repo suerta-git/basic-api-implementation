@@ -2,9 +2,10 @@ package com.thoughtworks.rslist.api;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thoughtworks.rslist.domain.User;
+import com.thoughtworks.rslist.po.RsEventPO;
 import com.thoughtworks.rslist.po.UserPO;
+import com.thoughtworks.rslist.repository.RsRepository;
 import com.thoughtworks.rslist.repository.UserRepository;
-import com.thoughtworks.rslist.service.UserService;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -29,8 +30,7 @@ class UserControllerTest {
 
     @Autowired private MockMvc mockMvc;
 
-    @Autowired private UserService userService;
-
+    @Autowired private RsRepository rsRepository;
     @Autowired private UserRepository userRepository;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -163,4 +163,22 @@ class UserControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error", is("invalid user id")));
     }
+
+    @Test
+    void should_remove_user_and_related_events_given_user_id() throws Exception {
+        UserPO userPO = userRepository.findByUserName("user1");
+        int userId = userPO.getId();
+        RsEventPO rsEventPO = RsEventPO.builder().eventName("whatever").keyWord("whatever").userPO(userPO).build();
+        rsRepository.save(rsEventPO);
+        int rsEventId = rsEventPO.getId();
+
+        mockMvc.perform(delete("/user/{userId}", userId)).andExpect(status().isOk());
+
+        assertFalse(userRepository.existsById(userId));
+        assertFalse(rsRepository.existsById(rsEventId));
+    }
+
+    // TODO
+    // 1. 删除magic number
+    // 2. 实验userPO更改后是否数据库自动更新
 }

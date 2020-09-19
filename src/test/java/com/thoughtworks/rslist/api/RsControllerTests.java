@@ -53,11 +53,11 @@ class RsControllerTests {
         defaultUserId = defaultUserPO.getId();
 
         rsRepository.deleteAll();
-        final RsEventPO defaultRsEventPO = new RsEventPO("第一条事件", "无标签", defaultUserId);
+        final RsEventPO defaultRsEventPO = new RsEventPO("第一条事件", "无标签", defaultUserPO);
         rsRepository.saveAll(Arrays.asList(
                 defaultRsEventPO,
-                new RsEventPO("第二条事件", "无标签", defaultUserId),
-                new RsEventPO("第三条事件", "无标签", defaultUserId)));
+                new RsEventPO("第二条事件", "无标签", defaultUserPO),
+                new RsEventPO("第三条事件", "无标签", defaultUserPO)));
         defaultRsEventId = defaultRsEventPO.getId();
 
         notExistingId = testRepository.getNextId();
@@ -287,6 +287,6 @@ class RsControllerTests {
     private void assertReturnedIdValid(RsEvent rsEvent, MvcResult mvcResult) {
         final int eventId = Integer.parseInt(Objects.requireNonNull(mvcResult.getResponse().getHeader("eventId")));
         RsEventPO rsEventPO = rsRepository.findById(eventId).orElse(new RsEventPO());
-        assertEquals(rsEvent, new RsEvent(rsEventPO.getEventName(), rsEventPO.getKeyWord(), rsEventPO.getUserId()));
+        assertEquals(rsEvent, new RsEvent(rsEventPO.getEventName(), rsEventPO.getKeyWord(), rsEventPO.getUserPO().getId()));
     }
 }

@@ -2,10 +2,7 @@ package com.thoughtworks.rslist.po;
 
 import lombok.*;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.util.Objects;
 
 @Entity
@@ -19,33 +16,21 @@ public class RsEventPO {
     private int id;
     private String eventName;
     private String keyWord;
-    private Integer userId;
 
-    public RsEventPO(String eventName, String keyWord, Integer userId) {
+    @ManyToOne
+    @JoinColumn(name = "userId")
+    private UserPO userPO;
+
+    public RsEventPO(String eventName, String keyWord, UserPO userPO) {
         this.eventName = eventName;
         this.keyWord = keyWord;
-        this.userId = userId;
+        this.userPO = userPO;
     }
 
     public RsEventPO(RsEventPO rsEventPO) {
         id = rsEventPO.getId();
         eventName = rsEventPO.getEventName();
         keyWord = rsEventPO.getKeyWord();
-        userId = rsEventPO.getUserId();
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        RsEventPO rsEventPO = (RsEventPO) o;
-        return eventName.equals(rsEventPO.eventName) &&
-                keyWord.equals(rsEventPO.keyWord) &&
-                userId.equals(rsEventPO.userId);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(eventName, keyWord, userId);
+        userPO = rsEventPO.getUserPO();
     }
 }
