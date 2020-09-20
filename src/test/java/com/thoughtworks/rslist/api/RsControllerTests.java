@@ -341,6 +341,18 @@ class RsControllerTests {
                 .andExpect(jsonPath("$.error", is("user's vote number not enough")));
     }
 
+    @Test
+    void should_update_user_vote_number_when_vote_succeed() throws Exception {
+        Vote vote = new Vote(8, defaultUserId, LocalDateTime.now());
+        String voteJson = objectMapper.writeValueAsString(vote);
+
+        mockMvc.perform(post("/rs/vote/{eventId}", defaultRsEventId).content(voteJson).contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+
+        final UserPO userPO = userRepository.findById(defaultUserId).orElse(new UserPO());
+        assertEquals(2, userPO.getVoteNum());
+    }
+
     private void assertReturnedIdValid(RsEvent rsEvent, MvcResult mvcResult) {
         final int eventId = Integer.parseInt(Objects.requireNonNull(mvcResult.getResponse().getHeader("eventId")));
         RsEventPO rsEventPO = rsRepository.findById(eventId).orElse(new RsEventPO());
