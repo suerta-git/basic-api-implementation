@@ -328,6 +328,19 @@ class RsControllerTests {
                 .andExpect(jsonPath("$.error", is("invalid user id")));
     }
 
+    @Test
+    void should_refuse_when_user_vote_number_not_enough() throws Exception {
+        Vote vote = new Vote(8, defaultUserId, LocalDateTime.now());
+        String voteJson = objectMapper.writeValueAsString(vote);
+
+        mockMvc.perform(post("/rs/vote/{eventId}", defaultRsEventId).content(voteJson).contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(post("/rs/vote/{eventId}", defaultRsEventId).content(voteJson).contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error", is("user's vote number not enough")));
+    }
+
     private void assertReturnedIdValid(RsEvent rsEvent, MvcResult mvcResult) {
         final int eventId = Integer.parseInt(Objects.requireNonNull(mvcResult.getResponse().getHeader("eventId")));
         RsEventPO rsEventPO = rsRepository.findById(eventId).orElse(new RsEventPO());

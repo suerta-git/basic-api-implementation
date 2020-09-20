@@ -89,7 +89,12 @@ public class RsService {
     public void voteTo(Vote vote, int eventId) {
         RsEventPO rsEventPO = rsRepository.findById(eventId).orElseThrow(() -> new RsEventNotValidException("invalid event id"));
         UserPO userPO = userRepository.findById(vote.getUserId()).orElseThrow(() -> new RsEventNotValidException("invalid user id"));
+        if (vote.getVoteNum() > userPO.getVoteNum()) {
+            throw new RsEventNotValidException("user's vote number not enough");
+        }
+        userPO.vote(vote.getVoteNum());
         rsEventPO.setVoteNum(rsEventPO.getVoteNum() + vote.getVoteNum());
+        userRepository.save(userPO);
         rsRepository.save(rsEventPO);
     }
 }

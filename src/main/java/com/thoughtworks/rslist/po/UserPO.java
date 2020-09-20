@@ -44,4 +44,8 @@ public class UserPO {
 
     @OneToMany(cascade = CascadeType.REMOVE, mappedBy = "userPO")
     private List<RsEventPO> rsEventPOs;
+
+    public void vote(Integer voteNum) {
+        this.voteNum -= voteNum;
+    }
 }
