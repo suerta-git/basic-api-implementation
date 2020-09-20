@@ -1,14 +1,10 @@
 package com.thoughtworks.rslist.po;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import lombok.*;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
+import java.util.List;
 
 @Entity
 @Table(name = "user")
@@ -17,6 +13,7 @@ import javax.persistence.Table;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserPO {
+
     public UserPO(String userName, int age, String gender, String email, String phone) {
         this.userName = userName;
         this.age = age;
@@ -33,4 +30,12 @@ public class UserPO {
     private String email;
     private String phone;
     private int voteNum = 10;
+
+    @JsonBackReference
+    @OneToMany(cascade = CascadeType.REMOVE, mappedBy = "userPO")
+    private List<RsEventPO> rsEventPOs;
+
+    public void vote(Integer voteNum) {
+        this.voteNum -= voteNum;
+    }
 }

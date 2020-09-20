@@ -1,6 +1,6 @@
 package com.thoughtworks.rslist.api;
 
-import com.thoughtworks.rslist.domain.User;
+import com.thoughtworks.rslist.bo.User;
 import com.thoughtworks.rslist.exception.Error;
 import com.thoughtworks.rslist.exception.UserNotValidException;
 import com.thoughtworks.rslist.service.UserService;

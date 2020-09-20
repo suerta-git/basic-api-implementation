@@ -1,20 +1,17 @@
 package com.thoughtworks.rslist.service;
 
-import com.thoughtworks.rslist.domain.User;
+import com.thoughtworks.rslist.bo.User;
 import com.thoughtworks.rslist.exception.UserNotValidException;
 import com.thoughtworks.rslist.po.UserPO;
 import com.thoughtworks.rslist.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
 public class UserService {
-
     @Autowired private UserRepository userRepository;
 
     public boolean isExistByName(String userName) {
@@ -30,10 +27,6 @@ public class UserService {
                         userPO.getEmail(),
                         userPO.getPhone()))
                 .collect(Collectors.toList());
-    }
-
-    public User getUser(String userName) {
-        return toUser(userRepository.findByUserName(userName));
     }
 
     public User getUser(int userId) {

@@ -1,10 +1,12 @@
 package com.thoughtworks.rslist.api;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.thoughtworks.rslist.domain.User;
+import com.thoughtworks.rslist.api.test_repository.TestRepository;
+import com.thoughtworks.rslist.bo.User;
+import com.thoughtworks.rslist.po.RsEventPO;
 import com.thoughtworks.rslist.po.UserPO;
+import com.thoughtworks.rslist.repository.RsRepository;
 import com.thoughtworks.rslist.repository.UserRepository;
-import com.thoughtworks.rslist.service.UserService;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -29,12 +31,12 @@ class UserControllerTest {
 
     @Autowired private MockMvc mockMvc;
 
-    @Autowired private UserService userService;
-
+    @Autowired private RsRepository rsRepository;
     @Autowired private UserRepository userRepository;
+    @Autowired private TestRepository testRepository;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
-
+    private int notExistingId;
 
     @BeforeEach
     void setup() {
@@ -44,6 +46,7 @@ class UserControllerTest {
                 new UserPO("user2", 20, "female", "user2@test.com", "18888888888"),
                 new UserPO("user3", 20, "female", "user3@test.com", "18888888888")
         ));
+        notExistingId = testRepository.getNextId();
     }
 
     @Test
@@ -69,7 +72,7 @@ class UserControllerTest {
 
         mockMvc.perform(post("/user").content(jsonString).contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isCreated())
-                .andExpect(header().longValue("id", userRepository.findIdByUserName("newUser")));;
+                .andExpect(header().longValue("id", userRepository.findIdByUserName("newUser").orElse(0)));;
 
         List<User> userList = new ArrayList<>(Arrays.asList(
                 new User("user1", 20, "male", "user1@test.com", "18888888888"),
@@ -132,23 +135,21 @@ class UserControllerTest {
     void should_get_user_given_user_id() throws Exception {
         String expect = objectMapper.writeValueAsString(new User("user1", 20, "male", "user1@test.com", "18888888888"));
 
-        mockMvc.perform(get("/user/{userId}", userRepository.findIdByUserName("user1")))
+        mockMvc.perform(get("/user/{userId}", userRepository.findIdByUserName("user1").orElse(0)))
                 .andExpect(content().json(expect))
                 .andExpect(status().isOk());
     }
 
     @Test
     void should_throw_when_get_user_given_wrong_user_id() throws Exception {
-        int wrongId = 99999;
-
-        mockMvc.perform(get("/user/{userId}", wrongId))
+        mockMvc.perform(get("/user/{userId}", notExistingId))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error", is("invalid user id")));
     }
 
     @Test
     void should_remove_user_given_user_id() throws Exception {
-        int userId = userRepository.findIdByUserName("user1");
+        int userId = userRepository.findIdByUserName("user1").orElse(0);
 
         mockMvc.perform(delete("/user/{userId}", userId)).andExpect(status().isOk());
 
@@ -157,10 +158,22 @@ class UserControllerTest {
 
     @Test
     void should_throw_when_delete_user_given_wrong_user_id() throws Exception {
-        int wrongId = 99999;
-
-        mockMvc.perform(delete("/user/{userId}", wrongId))
+        mockMvc.perform(delete("/user/{userId}", notExistingId))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error", is("invalid user id")));
+    }
+
+    @Test
+    void should_remove_user_and_related_events_given_user_id() throws Exception {
+        UserPO userPO = userRepository.findByUserName("user1").orElse(new UserPO());
+        int userId = userPO.getId();
+        RsEventPO rsEventPO = RsEventPO.builder().eventName("whatever").keyWord("whatever").userPO(userPO).build();
+        rsRepository.save(rsEventPO);
+        int rsEventId = rsEventPO.getId();
+
+        mockMvc.perform(delete("/user/{userId}", userId)).andExpect(status().isOk());
+
+        assertFalse(userRepository.existsById(userId));
+        assertFalse(rsRepository.existsById(rsEventId));
     }
 }

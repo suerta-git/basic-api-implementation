@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface UserRepository extends CrudRepository<UserPO, Integer> {
     @Override
@@ -12,8 +13,8 @@ public interface UserRepository extends CrudRepository<UserPO, Integer> {
 
     boolean existsByUserName(String userName);
 
-    UserPO findByUserName(String userName);
+    Optional<UserPO> findByUserName(String userName);
 
-    @Query(value = "select id from user where user_name = ?1", nativeQuery = true)
-    int findIdByUserName(String userName);
+    @Query("select user.id from UserPO user where user.userName = :userName")
+    Optional<Integer> findIdByUserName(String userName);
 }

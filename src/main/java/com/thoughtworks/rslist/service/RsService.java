@@ -1,30 +1,39 @@
 package com.thoughtworks.rslist.service;
 
-import com.thoughtworks.rslist.domain.RsEvent;
-import com.thoughtworks.rslist.domain.User;
+import com.thoughtworks.rslist.bo.RsEvent;
+import com.thoughtworks.rslist.bo.RsEventReturn;
+import com.thoughtworks.rslist.bo.RsEventUpdate;
+import com.thoughtworks.rslist.bo.Vote;
 import com.thoughtworks.rslist.exception.RsEventNotValidException;
+import com.thoughtworks.rslist.po.RsEventPO;
+import com.thoughtworks.rslist.po.UserPO;
+import com.thoughtworks.rslist.po.VotePO;
+import com.thoughtworks.rslist.repository.RsRepository;
+import com.thoughtworks.rslist.repository.UserRepository;
+import com.thoughtworks.rslist.repository.VoteRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class RsService {
-    private final List<RsEvent> rsList = new ArrayList<>();
-
     @Autowired private UserService userService;
+    @Autowired private RsRepository rsRepository;
+    @Autowired private UserRepository userRepository;
+    @Autowired private VoteRepository voteRepository;
 
     public int size() {
-        return rsList.size();
+        return (int) rsRepository.count();
     }
 
-    public List<RsEvent> getList() {
-        return rsList;
-    }
-
-    public List<RsEvent> getSubList(int start, int end) {
-        return rsList.subList(start, end);
+    public List<RsEventReturn> getSubList(int start, int end) {
+        return rsRepository.findAll()
+                .subList(start, end)
+                .stream()
+                .map(this::toRsEventReturn)
+                .collect(Collectors.toList());
     }
 
     public int addRsEvent(RsEvent rsEvent) {
@@ -32,39 +41,68 @@ public class RsService {
         if (!userService.isExistById(userId)) {
             throw new RsEventNotValidException("invalid param");
         }
-        rsList.add(rsEvent);
-        return rsList.size() - 1;
+        RsEventPO rsEventPO = toRsEventPO(rsEvent);
+        rsRepository.save(rsEventPO);
+        return rsEventPO.getId();
     }
 
-    public RsEvent get(int index) {
-        if (index < 0 || index >= size()) {
-            throw new RsEventNotValidException("invalid index");
+    public RsEventReturn get(int eventId) {
+        return toRsEventReturn(rsRepository
+                .findById(eventId)
+                .orElseThrow(() -> new RsEventNotValidException("invalid event id")));
+    }
+
+    public void updateRsEventOn(RsEventUpdate update, int eventId) {
+        RsEventPO rsEventPO = rsRepository.findById(eventId)
+                .orElseThrow(() -> new RsEventNotValidException("invalid event id"));
+
+        if (update.getUserId() != rsEventPO.getUserPO().getId()) {
+            throw new RsEventNotValidException("invalid user id");
         }
-        return rsList.get(index);
-    }
-
-    public void updateRsEventOn(RsEvent update, int index) {
         if (update.getEventName() != null) {
-            rsList.get(index).setEventName(update.getEventName());
+            rsEventPO.setEventName(update.getEventName());
         }
         if (update.getKeyWord() != null) {
-            rsList.get(index).setKeyWord(update.getKeyWord());
+            rsEventPO.setKeyWord(update.getKeyWord());
         }
-        if (update.getUserId() != null) {
-            final int userId = update.getUserId();
-            if (!userService.isExistById(userId)) {
-                throw new RsEventNotValidException("invalid param");
-            }
-            rsList.get(index).setUserId(userId);
-        }
+        rsRepository.save(rsEventPO);
     }
 
-    public void deleteRsEventOn(int index) {
-        rsList.remove(index);
+    public void deleteRsEvent(int eventId) {
+        if (!rsRepository.existsById(eventId)) {
+            throw new RsEventNotValidException("invalid event id");
+        }
+        rsRepository.deleteById(eventId);
     }
 
-    public void init(List<RsEvent> rsEvents) {
-        rsList.clear();
-        rsList.addAll(rsEvents);
+    private RsEventPO toRsEventPO(RsEvent rsEvent) {
+        return RsEventPO.builder()
+                .eventName(rsEvent.getEventName())
+                .keyWord(rsEvent.getKeyWord())
+                .userPO(userRepository.findById(rsEvent.getUserId()).orElse(null))
+                .build();
+    }
+
+    private RsEventReturn toRsEventReturn(RsEventPO rsEventPO) {
+        return new RsEventReturn(rsEventPO.getEventName(), rsEventPO.getKeyWord(), rsEventPO.getId(), rsEventPO.getVoteNum());
+    }
+
+    public void voteTo(Vote vote, int eventId) {
+        RsEventPO rsEventPO = rsRepository.findById(eventId).orElseThrow(() -> new RsEventNotValidException("invalid event id"));
+        UserPO userPO = userRepository.findById(vote.getUserId()).orElseThrow(() -> new RsEventNotValidException("invalid user id"));
+        if (vote.getVoteNum() > userPO.getVoteNum()) {
+            throw new RsEventNotValidException("user's vote number not enough");
+        }
+        userPO.vote(vote.getVoteNum());
+        rsEventPO.setVoteNum(rsEventPO.getVoteNum() + vote.getVoteNum());
+        userRepository.save(userPO);
+        rsRepository.save(rsEventPO);
+
+        VotePO votePO = VotePO.builder()
+                .voteNum(vote.getVoteNum())
+                .rsEventId(rsEventPO.getId())
+                .userId(userPO.getId())
+                .voteTime(vote.getVoteTime()).build();
+        voteRepository.save(votePO);
     }
 }
