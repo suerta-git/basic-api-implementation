@@ -1,10 +1,9 @@
 package com.thoughtworks.rslist.service;
 
-import com.thoughtworks.rslist.domain.RsEvent;
-import com.thoughtworks.rslist.domain.User;
+import com.thoughtworks.rslist.bo.RsEvent;
+import com.thoughtworks.rslist.bo.RsEventUpdate;
 import com.thoughtworks.rslist.exception.RsEventNotValidException;
 import com.thoughtworks.rslist.po.RsEventPO;
-import com.thoughtworks.rslist.po.UserPO;
 import com.thoughtworks.rslist.repository.RsRepository;
 import com.thoughtworks.rslist.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,22 +49,18 @@ public class RsService {
                 .orElseThrow(() -> new RsEventNotValidException("invalid event id")));
     }
 
-    public void updateRsEventOn(RsEvent update, int eventId) {
+    public void updateRsEventOn(RsEventUpdate update, int eventId) {
         RsEventPO rsEventPO = rsRepository.findById(eventId)
                 .orElseThrow(() -> new RsEventNotValidException("invalid event id"));
 
+        if (update.getUserId() != rsEventPO.getUserPO().getId()) {
+            throw new RsEventNotValidException("invalid user id");
+        }
         if (update.getEventName() != null) {
             rsEventPO.setEventName(update.getEventName());
         }
         if (update.getKeyWord() != null) {
             rsEventPO.setKeyWord(update.getKeyWord());
-        }
-        if (update.getUserId() != null) {
-            final int userId = update.getUserId();
-            rsEventPO.setUserPO(
-                    userRepository
-                            .findById(userId)
-                            .orElseThrow(() -> new RsEventNotValidException("invalid param")));
         }
         rsRepository.save(rsEventPO);
     }

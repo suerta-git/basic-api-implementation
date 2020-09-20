@@ -1,4 +1,4 @@
-package com.thoughtworks.rslist.domain;
+package com.thoughtworks.rslist.bo;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

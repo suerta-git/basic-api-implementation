@@ -3,11 +3,12 @@ package com.thoughtworks.rslist.api;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thoughtworks.rslist.api.test_repository.TestRepository;
+import com.thoughtworks.rslist.bo.RsEventUpdate;
 import com.thoughtworks.rslist.po.RsEventPO;
 import com.thoughtworks.rslist.po.UserPO;
 import com.thoughtworks.rslist.repository.RsRepository;
 import com.thoughtworks.rslist.repository.UserRepository;
-import com.thoughtworks.rslist.domain.RsEvent;
+import com.thoughtworks.rslist.bo.RsEvent;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -177,9 +178,9 @@ class RsControllerTests {
     }
 
     @Test
-    void should_update_event_given_all_fields() throws Exception {
-        RsEvent rsEvent = new RsEvent("第一条事件（新标签）", "新标签", userRepository.findIdByUserName("user2"));
-        String json = objectMapper.writeValueAsString(rsEvent);
+    void should_update_event_given_all_fields_with_correct_user_id() throws Exception {
+        RsEventUpdate rsEventUpdate = new RsEventUpdate("第一条事件（新标签）", "新标签", defaultUserId);
+        String json = objectMapper.writeValueAsString(rsEventUpdate);
 
         mockMvc.perform(patch("/rs/{eventId}", defaultRsEventId).content(json).contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
@@ -190,13 +191,15 @@ class RsControllerTests {
     }
 
     @Test
-    void should_update_event_given_one_field() throws Exception {
-        RsEvent firstTestEvent = new RsEvent();
-        firstTestEvent.setKeyWord("只改标签");
+    void should_update_event_given_one_field_with_correct_user_id() throws Exception {
+        RsEventUpdate firstTestEventUpdate = RsEventUpdate.builder()
+                .eventName("第一条事件（新）")
+                .userId(defaultUserId)
+                .build();
 
-        String firstJson = objectMapper.writeValueAsString(firstTestEvent);
+        String firstJson = objectMapper.writeValueAsString(firstTestEventUpdate);
 
-        RsEvent firstExpectRsEvent = new RsEvent("第一条事件", "只改标签", defaultUserId);
+        RsEvent firstExpectRsEvent = new RsEvent("第一条事件（新）", "无标签", defaultUserId);
         String firstExpectJson = objectMapper.writeValueAsString(firstExpectRsEvent);
 
         mockMvc.perform(patch("/rs/{eventId}", defaultRsEventId).content(firstJson).contentType(MediaType.APPLICATION_JSON))
@@ -205,9 +208,11 @@ class RsControllerTests {
                 .andExpect(content().json(firstExpectJson))
                 .andExpect(status().isOk());
 
-        RsEvent secondTestEvent = new RsEvent();
-        secondTestEvent.setEventName("第一条事件（新）");
-        String secondJson = objectMapper.writeValueAsString(secondTestEvent);
+        RsEventUpdate secondTestEventUpdate = RsEventUpdate.builder()
+                .keyWord("只改标签")
+                .userId(defaultUserId)
+                .build();
+        String secondJson = objectMapper.writeValueAsString(secondTestEventUpdate);
 
         RsEvent secondExpectRsEvent = new RsEvent("第一条事件（新）", "只改标签", defaultUserId);
         String secondExpectJson = objectMapper.writeValueAsString(secondExpectRsEvent);
@@ -217,42 +222,26 @@ class RsControllerTests {
         mockMvc.perform(get("/rs/{eventId}", defaultRsEventId))
                 .andExpect(content().json(secondExpectJson))
                 .andExpect(status().isOk());
-
-        RsEvent thirdTestEvent = new RsEvent();
-        thirdTestEvent.setUserId(userRepository.findIdByUserName("user2"));
-        String thirdJson = objectMapper.writeValueAsString(thirdTestEvent);
-
-        RsEvent thirdExpectRsEvent = new RsEvent("第一条事件（新）", "只改标签", userRepository.findIdByUserName("user2"));
-        String thirdExpectJson = objectMapper.writeValueAsString(thirdExpectRsEvent);
-
-        mockMvc.perform(patch("/rs/{eventId}", defaultRsEventId).content(thirdJson).contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
-        mockMvc.perform(get("/rs/{eventId}", defaultRsEventId))
-                .andExpect(content().json(thirdExpectJson))
-                .andExpect(status().isOk());
     }
 
     @Test
-    void should_update_event_given_existing_user() throws Exception {
-        RsEvent rsEvent = new RsEvent(null, null, userRepository.findIdByUserName("user2"));
-        String json = objectMapper.writeValueAsString(rsEvent);
+    void should_refuse_when_update_event_given_not_binding_user() throws Exception {
+        RsEventUpdate rsEventUpdate = new RsEventUpdate("whatever", "whatever", userRepository.findIdByUserName("user2"));
+        String json = objectMapper.writeValueAsString(rsEventUpdate);
 
         mockMvc.perform(patch("/rs/{eventId}", defaultRsEventId).content(json).contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
-
-        RsEvent expectRsEvent = new RsEvent("第一条事件", "无标签", userRepository.findIdByUserName("user2"));
-        String expectJson = objectMapper.writeValueAsString(expectRsEvent);
-        mockMvc.perform(get("/rs/{eventId}", defaultRsEventId)).andExpect(content().json(expectJson))
-                .andExpect(status().isOk());
+                .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.error", is("invalid user id")));
     }
 
     @Test
-    void should_refuse_when_update_event_given_not_existing_user() throws Exception {
-        RsEvent rsEvent = new RsEvent(null, null, notExistingId);
-        String json = objectMapper.writeValueAsString(rsEvent);
+    void should_refuse_when_update_event_given_null_user_id() throws Exception {
+        RsEventUpdate rsEventUpdate = RsEventUpdate.builder().eventName("whatever").keyWord("whatever").build();
+        String json = objectMapper.writeValueAsString(rsEventUpdate);
 
         mockMvc.perform(patch("/rs/{eventId}", defaultRsEventId).content(json).contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error", is("invalid param")));
     }
 
     @Test

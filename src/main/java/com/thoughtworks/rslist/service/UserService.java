@@ -1,14 +1,12 @@
 package com.thoughtworks.rslist.service;
 
-import com.thoughtworks.rslist.domain.User;
+import com.thoughtworks.rslist.bo.User;
 import com.thoughtworks.rslist.exception.UserNotValidException;
 import com.thoughtworks.rslist.po.UserPO;
 import com.thoughtworks.rslist.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 

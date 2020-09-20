@@ -1,6 +1,7 @@
 package com.thoughtworks.rslist.api;
 
-import com.thoughtworks.rslist.domain.RsEvent;
+import com.thoughtworks.rslist.bo.RsEvent;
+import com.thoughtworks.rslist.bo.RsEventUpdate;
 import com.thoughtworks.rslist.exception.RsEventNotValidException;
 import com.thoughtworks.rslist.service.RsService;
 import com.thoughtworks.rslist.service.UserService;
@@ -43,7 +44,7 @@ public class RsController {
   }
 
   @PatchMapping("/rs/{eventId}")
-  public ResponseEntity<Void> updateRsEventOn(@RequestBody RsEvent update, @PathVariable int eventId) {
+  public ResponseEntity<Void> updateRsEventOn(@RequestBody @Valid RsEventUpdate update, @PathVariable int eventId) {
     rsService.updateRsEventOn(update, eventId);
     return ResponseEntity.ok().build();
   }
