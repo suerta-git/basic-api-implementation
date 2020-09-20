@@ -72,7 +72,7 @@ class UserControllerTest {
 
         mockMvc.perform(post("/user").content(jsonString).contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isCreated())
-                .andExpect(header().longValue("id", userRepository.findIdByUserName("newUser")));;
+                .andExpect(header().longValue("id", userRepository.findIdByUserName("newUser").orElse(0)));;
 
         List<User> userList = new ArrayList<>(Arrays.asList(
                 new User("user1", 20, "male", "user1@test.com", "18888888888"),
@@ -135,7 +135,7 @@ class UserControllerTest {
     void should_get_user_given_user_id() throws Exception {
         String expect = objectMapper.writeValueAsString(new User("user1", 20, "male", "user1@test.com", "18888888888"));
 
-        mockMvc.perform(get("/user/{userId}", userRepository.findIdByUserName("user1")))
+        mockMvc.perform(get("/user/{userId}", userRepository.findIdByUserName("user1").orElse(0)))
                 .andExpect(content().json(expect))
                 .andExpect(status().isOk());
     }
@@ -149,7 +149,7 @@ class UserControllerTest {
 
     @Test
     void should_remove_user_given_user_id() throws Exception {
-        int userId = userRepository.findIdByUserName("user1");
+        int userId = userRepository.findIdByUserName("user1").orElse(0);
 
         mockMvc.perform(delete("/user/{userId}", userId)).andExpect(status().isOk());
 

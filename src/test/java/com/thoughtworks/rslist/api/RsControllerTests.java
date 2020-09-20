@@ -226,7 +226,7 @@ class RsControllerTests {
 
     @Test
     void should_refuse_when_update_event_given_not_binding_user() throws Exception {
-        RsEventUpdate rsEventUpdate = new RsEventUpdate("whatever", "whatever", userRepository.findIdByUserName("user2"));
+        RsEventUpdate rsEventUpdate = new RsEventUpdate("whatever", "whatever", userRepository.findIdByUserName("user2").orElse(0));
         String json = objectMapper.writeValueAsString(rsEventUpdate);
 
         mockMvc.perform(patch("/rs/{eventId}", defaultRsEventId).content(json).contentType(MediaType.APPLICATION_JSON))
