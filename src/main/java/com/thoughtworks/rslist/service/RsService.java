@@ -5,6 +5,7 @@ import com.thoughtworks.rslist.bo.RsEventUpdate;
 import com.thoughtworks.rslist.bo.Vote;
 import com.thoughtworks.rslist.exception.RsEventNotValidException;
 import com.thoughtworks.rslist.po.RsEventPO;
+import com.thoughtworks.rslist.po.UserPO;
 import com.thoughtworks.rslist.repository.RsRepository;
 import com.thoughtworks.rslist.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -87,6 +88,7 @@ public class RsService {
 
     public void voteTo(Vote vote, int eventId) {
         RsEventPO rsEventPO = rsRepository.findById(eventId).orElseThrow(() -> new RsEventNotValidException("invalid event id"));
+        UserPO userPO = userRepository.findById(vote.getUserId()).orElseThrow(() -> new RsEventNotValidException("invalid user id"));
         rsEventPO.setVoteNum(rsEventPO.getVoteNum() + vote.getVoteNum());
         rsRepository.save(rsEventPO);
     }
