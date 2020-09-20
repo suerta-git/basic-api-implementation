@@ -3,7 +3,6 @@ package com.thoughtworks.rslist.bo;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 
-import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 @Builder

@@ -4,6 +4,7 @@ package com.thoughtworks.rslist.api;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thoughtworks.rslist.api.test_repository.TestRepository;
 import com.thoughtworks.rslist.bo.RsEventUpdate;
+import com.thoughtworks.rslist.bo.Vote;
 import com.thoughtworks.rslist.po.RsEventPO;
 import com.thoughtworks.rslist.po.UserPO;
 import com.thoughtworks.rslist.repository.RsRepository;
@@ -17,6 +18,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -32,7 +35,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 class RsControllerTests {
     @Autowired private MockMvc mockMvc;
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    @Autowired private ObjectMapper objectMapper;
 
     @Autowired private RsRepository rsRepository;
     @Autowired private UserRepository userRepository;
@@ -271,6 +274,18 @@ class RsControllerTests {
         mockMvc.perform(get("/rs/{wrongId}", notExistingId))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error", is("invalid event id")));
+    }
+
+    @Test
+    void should_vote_event_with_correct_event_id() throws Exception {
+        Vote vote = new Vote(5, defaultUserId, LocalDateTime.now());
+        String voteJson = objectMapper.writeValueAsString(vote);
+
+        mockMvc.perform(post("/rs/vote/{eventId}", defaultRsEventId).content(voteJson).contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+
+        final RsEventPO rsEventPO = rsRepository.findById(defaultRsEventId).orElse(new RsEventPO());
+        assertEquals(5, rsEventPO.getVoteNum());
     }
 
     private void assertReturnedIdValid(RsEvent rsEvent, MvcResult mvcResult) {

@@ -16,6 +16,7 @@ public class RsEventPO {
     private int id;
     private String eventName;
     private String keyWord;
+    private int voteNum;
 
     @ManyToOne
     @JoinColumn(name = "userId")
@@ -32,5 +33,6 @@ public class RsEventPO {
         eventName = rsEventPO.getEventName();
         keyWord = rsEventPO.getKeyWord();
         userPO = rsEventPO.getUserPO();
+        voteNum = rsEventPO.getVoteNum();
     }
 }

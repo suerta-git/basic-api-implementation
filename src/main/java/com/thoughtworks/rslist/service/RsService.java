@@ -2,6 +2,7 @@ package com.thoughtworks.rslist.service;
 
 import com.thoughtworks.rslist.bo.RsEvent;
 import com.thoughtworks.rslist.bo.RsEventUpdate;
+import com.thoughtworks.rslist.bo.Vote;
 import com.thoughtworks.rslist.exception.RsEventNotValidException;
 import com.thoughtworks.rslist.po.RsEventPO;
 import com.thoughtworks.rslist.repository.RsRepository;
@@ -82,5 +83,11 @@ public class RsService {
 
     private RsEvent toRsEvent(RsEventPO rsEventPO) {
         return new RsEvent(rsEventPO.getEventName(), rsEventPO.getKeyWord(), rsEventPO.getUserPO().getId());
+    }
+
+    public void voteTo(Vote vote, int eventId) {
+        RsEventPO rsEventPO = rsRepository.findById(eventId).orElseThrow(() -> new RsEventNotValidException("invalid event id"));
+        rsEventPO.setVoteNum(rsEventPO.getVoteNum() + vote.getVoteNum());
+        rsRepository.save(rsEventPO);
     }
 }

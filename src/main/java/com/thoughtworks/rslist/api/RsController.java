@@ -2,6 +2,7 @@ package com.thoughtworks.rslist.api;
 
 import com.thoughtworks.rslist.bo.RsEvent;
 import com.thoughtworks.rslist.bo.RsEventUpdate;
+import com.thoughtworks.rslist.bo.Vote;
 import com.thoughtworks.rslist.exception.RsEventNotValidException;
 import com.thoughtworks.rslist.service.RsService;
 import com.thoughtworks.rslist.service.UserService;
@@ -52,6 +53,12 @@ public class RsController {
   @DeleteMapping("/rs/{eventId}")
   public ResponseEntity<Void> deleteRsEventOn(@PathVariable int eventId) {
     rsService.deleteRsEvent(eventId);
+    return ResponseEntity.ok().build();
+  }
+
+  @PostMapping("/rs/vote/{eventId}")
+  public ResponseEntity<Void> voteRsEventOn(@RequestBody Vote vote, @PathVariable int eventId) {
+    rsService.voteTo(vote, eventId);
     return ResponseEntity.ok().build();
   }
 }
