@@ -10,6 +10,7 @@ import com.thoughtworks.rslist.po.UserPO;
 import com.thoughtworks.rslist.repository.RsRepository;
 import com.thoughtworks.rslist.repository.UserRepository;
 import com.thoughtworks.rslist.bo.RsEvent;
+import com.thoughtworks.rslist.repository.VoteRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +40,7 @@ class RsControllerTests {
 
     @Autowired private RsRepository rsRepository;
     @Autowired private UserRepository userRepository;
+    @Autowired private VoteRepository voteRepository;
     @Autowired private TestRepository testRepository;
 
     private int defaultUserId;
@@ -65,6 +67,8 @@ class RsControllerTests {
         defaultRsEventId = defaultRsEventPO.getId();
 
         notExistingId = testRepository.getNextId();
+
+        voteRepository.deleteAll();
     }
 
     @Test
@@ -351,6 +355,17 @@ class RsControllerTests {
 
         final UserPO userPO = userRepository.findById(defaultUserId).orElse(new UserPO());
         assertEquals(2, userPO.getVoteNum());
+    }
+
+    @Test
+    void should_record_vote_when_vote_succeed() throws Exception {
+        Vote vote = new Vote(5, defaultUserId, LocalDateTime.now());
+        String voteJson = objectMapper.writeValueAsString(vote);
+
+        mockMvc.perform(post("/rs/vote/{eventId}", defaultRsEventId).content(voteJson).contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+
+        assertEquals(1, voteRepository.count());
     }
 
     private void assertReturnedIdValid(RsEvent rsEvent, MvcResult mvcResult) {

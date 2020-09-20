@@ -1,5 +1,6 @@
 package com.thoughtworks.rslist.po;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import lombok.*;
 
 import javax.persistence.*;
@@ -12,18 +13,6 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserPO {
-    @Override
-    public String toString() {
-        return "UserPO{" +
-                "id=" + id +
-                ", userName='" + userName + '\'' +
-                ", age=" + age +
-                ", gender='" + gender + '\'' +
-                ", email='" + email + '\'' +
-                ", phone='" + phone + '\'' +
-                ", voteNum=" + voteNum +
-                '}';
-    }
 
     public UserPO(String userName, int age, String gender, String email, String phone) {
         this.userName = userName;
@@ -42,6 +31,7 @@ public class UserPO {
     private String phone;
     private int voteNum = 10;
 
+    @JsonBackReference
     @OneToMany(cascade = CascadeType.REMOVE, mappedBy = "userPO")
     private List<RsEventPO> rsEventPOs;
 

@@ -6,8 +6,10 @@ import com.thoughtworks.rslist.bo.Vote;
 import com.thoughtworks.rslist.exception.RsEventNotValidException;
 import com.thoughtworks.rslist.po.RsEventPO;
 import com.thoughtworks.rslist.po.UserPO;
+import com.thoughtworks.rslist.po.VotePO;
 import com.thoughtworks.rslist.repository.RsRepository;
 import com.thoughtworks.rslist.repository.UserRepository;
+import com.thoughtworks.rslist.repository.VoteRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -22,6 +24,7 @@ public class RsService {
     @Autowired private UserService userService;
     @Autowired private RsRepository rsRepository;
     @Autowired private UserRepository userRepository;
+    @Autowired private VoteRepository voteRepository;
 
     public int size() {
         return (int) rsRepository.count();
@@ -96,5 +99,12 @@ public class RsService {
         rsEventPO.setVoteNum(rsEventPO.getVoteNum() + vote.getVoteNum());
         userRepository.save(userPO);
         rsRepository.save(rsEventPO);
+
+        VotePO votePO = VotePO.builder()
+                .voteNum(vote.getVoteNum())
+                .rsEventId(rsEventPO.getId())
+                .userId(userPO.getId())
+                .voteTime(vote.getVoteTime()).build();
+        voteRepository.save(votePO);
     }
 }
