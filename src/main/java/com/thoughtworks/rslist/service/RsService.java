@@ -1,6 +1,7 @@
 package com.thoughtworks.rslist.service;
 
 import com.thoughtworks.rslist.bo.RsEvent;
+import com.thoughtworks.rslist.bo.RsEventReturn;
 import com.thoughtworks.rslist.bo.RsEventUpdate;
 import com.thoughtworks.rslist.bo.Vote;
 import com.thoughtworks.rslist.exception.RsEventNotValidException;
@@ -13,14 +14,11 @@ import com.thoughtworks.rslist.repository.VoteRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
 public class RsService {
-    private final List<RsEvent> rsList = new ArrayList<>();
-
     @Autowired private UserService userService;
     @Autowired private RsRepository rsRepository;
     @Autowired private UserRepository userRepository;
@@ -30,11 +28,11 @@ public class RsService {
         return (int) rsRepository.count();
     }
 
-    public List<RsEvent> getSubList(int start, int end) {
+    public List<RsEventReturn> getSubList(int start, int end) {
         return rsRepository.findAll()
                 .subList(start, end)
                 .stream()
-                .map(this::toRsEvent)
+                .map(this::toRsEventReturn)
                 .collect(Collectors.toList());
     }
 
@@ -48,8 +46,8 @@ public class RsService {
         return rsEventPO.getId();
     }
 
-    public RsEvent get(int eventId) {
-        return toRsEvent(rsRepository
+    public RsEventReturn get(int eventId) {
+        return toRsEventReturn(rsRepository
                 .findById(eventId)
                 .orElseThrow(() -> new RsEventNotValidException("invalid event id")));
     }
@@ -85,8 +83,8 @@ public class RsService {
                 .build();
     }
 
-    private RsEvent toRsEvent(RsEventPO rsEventPO) {
-        return new RsEvent(rsEventPO.getEventName(), rsEventPO.getKeyWord(), rsEventPO.getUserPO().getId());
+    private RsEventReturn toRsEventReturn(RsEventPO rsEventPO) {
+        return new RsEventReturn(rsEventPO.getEventName(), rsEventPO.getKeyWord(), rsEventPO.getId(), rsEventPO.getVoteNum());
     }
 
     public void voteTo(Vote vote, int eventId) {

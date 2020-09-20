@@ -3,6 +3,7 @@ package com.thoughtworks.rslist.api;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thoughtworks.rslist.api.test_repository.TestRepository;
+import com.thoughtworks.rslist.bo.RsEventReturn;
 import com.thoughtworks.rslist.bo.RsEventUpdate;
 import com.thoughtworks.rslist.bo.Vote;
 import com.thoughtworks.rslist.po.RsEventPO;
@@ -27,8 +28,7 @@ import java.util.List;
 import java.util.Objects;
 
 import static org.hamcrest.Matchers.is;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -73,10 +73,16 @@ class RsControllerTests {
 
     @Test
     void should_get_all_list() throws Exception {
-        List<RsEvent> rsList = new ArrayList<>(Arrays.asList(
-                new RsEvent("第一条事件", "无标签", defaultUserId),
-                new RsEvent("第二条事件", "无标签", defaultUserId),
-                new RsEvent("第三条事件", "无标签", defaultUserId)));
+        rsRepository.deleteAll();
+        UserPO defaultUserPO = userRepository.findById(defaultUserId).orElse(new UserPO());
+        RsEventPO rsEventPO1 = RsEventPO.builder().eventName("事件1").keyWord("无").userPO(defaultUserPO).build();
+        RsEventPO rsEventPO2 = RsEventPO.builder().eventName("事件2").keyWord("无").userPO(defaultUserPO).build();
+        rsRepository.saveAll(Arrays.asList(rsEventPO1, rsEventPO2));
+
+        List<RsEventReturn> rsList = new ArrayList<>(Arrays.asList(
+                new RsEventReturn(rsEventPO1.getEventName(), rsEventPO1.getKeyWord(), rsEventPO1.getId(), rsEventPO1.getVoteNum()),
+                new RsEventReturn(rsEventPO2.getEventName(), rsEventPO2.getKeyWord(), rsEventPO2.getId(), rsEventPO2.getVoteNum())
+        ));
 
         String jsonString = objectMapper.writeValueAsString(rsList);
 
@@ -87,9 +93,17 @@ class RsControllerTests {
 
     @Test
     void should_get_sublist() throws Exception {
-        List<RsEvent> rsList = new ArrayList<>(Arrays.asList(
-                new RsEvent("第一条事件", "无标签", defaultUserId),
-                new RsEvent("第二条事件", "无标签", defaultUserId)));
+        rsRepository.deleteAll();
+        UserPO defaultUserPO = userRepository.findById(defaultUserId).orElse(new UserPO());
+        RsEventPO rsEventPO1 = RsEventPO.builder().eventName("事件1").keyWord("无").userPO(defaultUserPO).build();
+        RsEventPO rsEventPO2 = RsEventPO.builder().eventName("事件2").keyWord("无").userPO(defaultUserPO).build();
+        RsEventPO rsEventPO3 = RsEventPO.builder().eventName("事件3").keyWord("无").userPO(defaultUserPO).build();
+        rsRepository.saveAll(Arrays.asList(rsEventPO1, rsEventPO2, rsEventPO3));
+
+        List<RsEventReturn> rsList = new ArrayList<>(Arrays.asList(
+                new RsEventReturn(rsEventPO1.getEventName(), rsEventPO1.getKeyWord(), rsEventPO1.getId(), rsEventPO1.getVoteNum()),
+                new RsEventReturn(rsEventPO2.getEventName(), rsEventPO2.getKeyWord(), rsEventPO2.getId(), rsEventPO2.getVoteNum())
+        ));
 
         String jsonString = objectMapper.writeValueAsString(rsList);
 
@@ -108,16 +122,7 @@ class RsControllerTests {
 
         assertReturnedIdValid(rsEvent, mvcResult);
 
-        List<RsEvent> rsList = new ArrayList<>(Arrays.asList(
-                new RsEvent("第一条事件", "无标签", defaultUserId),
-                new RsEvent("第二条事件", "无标签", defaultUserId),
-                new RsEvent("第三条事件", "无标签", defaultUserId),
-                rsEvent));
-
-        String jsonString = objectMapper.writeValueAsString(rsList);
-        mockMvc.perform(get("/rs/list"))
-                .andExpect(content().json(jsonString))
-                .andExpect(status().isOk());
+        assertEquals(4, rsRepository.count());
     }
 
     @Test
@@ -176,8 +181,8 @@ class RsControllerTests {
 
     @Test
     void should_get_one_event() throws Exception {
-        RsEvent rsEvent = new RsEvent("第一条事件", "无标签", defaultUserId);
-        String json = objectMapper.writeValueAsString(rsEvent);
+        RsEventReturn rsEventReturn = new RsEventReturn("第一条事件", "无标签", defaultRsEventId, 0);
+        String json = objectMapper.writeValueAsString(rsEventReturn);
 
         mockMvc.perform(get("/rs/{eventId}", defaultRsEventId))
                 .andExpect(content().json(json))
@@ -192,9 +197,9 @@ class RsControllerTests {
         mockMvc.perform(patch("/rs/{eventId}", defaultRsEventId).content(json).contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
 
-        mockMvc.perform(get("/rs/{eventId}", defaultRsEventId))
-                .andExpect(content().json(json))
-                .andExpect(status().isOk());
+        final RsEventPO actual = rsRepository.findById(defaultRsEventId).orElse(new RsEventPO());
+        assertEquals("第一条事件（新标签）", actual.getEventName());
+        assertEquals("新标签", actual.getKeyWord());
     }
 
     @Test
@@ -206,14 +211,10 @@ class RsControllerTests {
 
         String firstJson = objectMapper.writeValueAsString(firstTestEventUpdate);
 
-        RsEvent firstExpectRsEvent = new RsEvent("第一条事件（新）", "无标签", defaultUserId);
-        String firstExpectJson = objectMapper.writeValueAsString(firstExpectRsEvent);
-
         mockMvc.perform(patch("/rs/{eventId}", defaultRsEventId).content(firstJson).contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
-        mockMvc.perform(get("/rs/{eventId}", defaultRsEventId))
-                .andExpect(content().json(firstExpectJson))
-                .andExpect(status().isOk());
+        RsEventPO actual = rsRepository.findById(defaultRsEventId).orElse(new RsEventPO());
+        assertEquals("第一条事件（新）", actual.getEventName());
 
         RsEventUpdate secondTestEventUpdate = RsEventUpdate.builder()
                 .keyWord("只改标签")
@@ -221,14 +222,10 @@ class RsControllerTests {
                 .build();
         String secondJson = objectMapper.writeValueAsString(secondTestEventUpdate);
 
-        RsEvent secondExpectRsEvent = new RsEvent("第一条事件（新）", "只改标签", defaultUserId);
-        String secondExpectJson = objectMapper.writeValueAsString(secondExpectRsEvent);
-
         mockMvc.perform(patch("/rs/{eventId}", defaultRsEventId).content(secondJson).contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
-        mockMvc.perform(get("/rs/{eventId}", defaultRsEventId))
-                .andExpect(content().json(secondExpectJson))
-                .andExpect(status().isOk());
+        actual = rsRepository.findById(defaultRsEventId).orElse(new RsEventPO());
+        assertEquals("只改标签", actual.getKeyWord());
     }
 
     @Test
@@ -238,7 +235,7 @@ class RsControllerTests {
 
         mockMvc.perform(patch("/rs/{eventId}", defaultRsEventId).content(json).contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
-        .andExpect(jsonPath("$.error", is("invalid user id")));
+                .andExpect(jsonPath("$.error", is("invalid user id")));
     }
 
     @Test
@@ -261,9 +258,7 @@ class RsControllerTests {
 
         mockMvc.perform(delete("/rs/{eventId}", defaultRsEventId)).andExpect(status().isOk());
 
-        mockMvc.perform(get("/rs/list"))
-                .andExpect(content().json(jsonString))
-                .andExpect(status().isOk());
+        assertNull(rsRepository.findById(defaultRsEventId).orElse(null));
     }
 
     @Test
@@ -366,6 +361,21 @@ class RsControllerTests {
                 .andExpect(status().isOk());
 
         assertEquals(1, voteRepository.count());
+    }
+
+    @Test
+    void should_get_correct_vote_number_when_get_event_after_vote_succeed() throws Exception {
+        Vote vote = new Vote(8, defaultUserId, LocalDateTime.now());
+        String voteJson = objectMapper.writeValueAsString(vote);
+
+        mockMvc.perform(post("/rs/vote/{eventId}", defaultRsEventId).content(voteJson).contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+
+        RsEventReturn rsEventReturn = new RsEventReturn("第一条事件", "无标签", defaultRsEventId, 8);
+        String expectJson = objectMapper.writeValueAsString(rsEventReturn);
+        mockMvc.perform(get("/rs/{eventId}", defaultRsEventId))
+                .andExpect(content().json(expectJson))
+                .andExpect(status().isOk());
     }
 
     private void assertReturnedIdValid(RsEvent rsEvent, MvcResult mvcResult) {

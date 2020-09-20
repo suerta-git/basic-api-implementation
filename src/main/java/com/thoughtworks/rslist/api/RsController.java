@@ -1,6 +1,7 @@
 package com.thoughtworks.rslist.api;
 
 import com.thoughtworks.rslist.bo.RsEvent;
+import com.thoughtworks.rslist.bo.RsEventReturn;
 import com.thoughtworks.rslist.bo.RsEventUpdate;
 import com.thoughtworks.rslist.bo.Vote;
 import com.thoughtworks.rslist.exception.RsEventNotValidException;
@@ -20,7 +21,7 @@ public class RsController {
   @Autowired private RsService rsService;
 
   @GetMapping("/rs/list")
-  public ResponseEntity<List<RsEvent>> getRsList(@RequestParam(required = false) Integer start, @RequestParam (required = false) Integer end) {
+  public ResponseEntity<List<RsEventReturn>> getRsList(@RequestParam(required = false) Integer start, @RequestParam (required = false) Integer end) {
     if (start == null) {
       start = 1;
     }
@@ -40,7 +41,7 @@ public class RsController {
   }
 
   @GetMapping("/rs/{eventId}")
-  public ResponseEntity<RsEvent> getOneRsEvent(@PathVariable int eventId) {
+  public ResponseEntity<RsEventReturn> getOneRsEvent(@PathVariable int eventId) {
     return ResponseEntity.ok().body(rsService.get(eventId));
   }
 
