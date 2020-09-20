@@ -288,6 +288,16 @@ class RsControllerTests {
         assertEquals(5, rsEventPO.getVoteNum());
     }
 
+    @Test
+    void should_refuse_when_vote_event_given_incorrect_event_id() throws Exception {
+        Vote vote = new Vote(5, defaultUserId, LocalDateTime.now());
+        String voteJson = objectMapper.writeValueAsString(vote);
+
+        mockMvc.perform(post("/rs/vote/{eventId}", notExistingId).content(voteJson).contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error", is("invalid event id")));
+    }
+
     private void assertReturnedIdValid(RsEvent rsEvent, MvcResult mvcResult) {
         final int eventId = Integer.parseInt(Objects.requireNonNull(mvcResult.getResponse().getHeader("eventId")));
         RsEventPO rsEventPO = rsRepository.findById(eventId).orElse(new RsEventPO());
