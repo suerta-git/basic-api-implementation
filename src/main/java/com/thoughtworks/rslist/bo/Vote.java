@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 
@@ -13,9 +14,10 @@ import java.time.LocalDateTime;
 @Data
 public class Vote {
     @NotNull
-    private int voteNum;
+    @Min(0)
+    private Integer voteNum;
     @NotNull
-    private int userId;
+    private Integer userId;
     @NotNull
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     private LocalDateTime voteTime;
